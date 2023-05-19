@@ -27,10 +27,10 @@ public class GridFactory {
 
         // Index Buffer
         int index2 = 0;
-        int[] indexBuffer = new int[6 * (m - 1) * (n - 1)];
-        for (int i = 0; i < n; i++){
+        int[] indexBuffer = new int[2 * 3 * (m - 1) * (n - 1)];
+        for (int i = 0; i < n - 1; i++){
             int rowOffset = i * m;
-            for (int j = 0; j < m; j++) {
+            for (int j = 0; j < m - 1; j++) {
                 indexBuffer[index2++] = (j + rowOffset);
                 indexBuffer[index2++] = (j + m + rowOffset);
                 indexBuffer[index2++] = (j + 1 + rowOffset);
@@ -38,6 +38,7 @@ public class GridFactory {
                 indexBuffer[index2++] = (j + 1 + rowOffset);
                 indexBuffer[index2++] = (j + m + rowOffset);
                 indexBuffer[index2++] = (j + m + 1 + rowOffset);
+
             }
         }
 
@@ -48,9 +49,5 @@ public class GridFactory {
 
         // Return
         return new OGLBuffers(vertexBuffer, attributes, indexBuffer);
-    }
-
-    public static void main(String[] args) {
-        generateGrid(5,5);
     }
 }

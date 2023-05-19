@@ -39,6 +39,9 @@ public class Renderer extends AbstractRenderer{
 
         // Set the clear color
         glClearColor(0.15f, 0.15f, 0.15f, 0.15f);
+        // Polygon mode
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
         textRenderer = new OGLTextRenderer(width, height);
 
         shaderProgramMain = ShaderUtils.loadProgram("/shader");
@@ -47,7 +50,7 @@ public class Renderer extends AbstractRenderer{
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
         
         camera = new Camera()
-                .withPosition(new Vec3D(5,5,5))
+                .withPosition(new Vec3D(3,3,3))
                 .withAzimuth(5 / 4f * Math.PI)
                 .withZenith(-1 / 5f * Math.PI);
 
@@ -55,9 +58,10 @@ public class Renderer extends AbstractRenderer{
                 Math.PI / 3,
                 LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH,
                 0.1f,
-                50.f
+                20
         );
-        
+
+        /*
         float[] vertexBufferData = {
                 -1, -1,
                 1, 0,
@@ -70,6 +74,8 @@ public class Renderer extends AbstractRenderer{
         };
 
         oglBuffers = new OGLBuffers(vertexBufferData, attributes, indexBufferData);
+   */
+        oglBuffers = GridFactory.generateGrid(30, 30);
     }
 
     // Called each frame
@@ -80,8 +86,8 @@ public class Renderer extends AbstractRenderer{
         glClearColor(0.15f,0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUniform4fv(viewLocation, camera.getViewMatrix().floatArray());
-        glUniform4fv(projectionLocation, projection.floatArray());
+        glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
+        glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
 
         glUseProgram(shaderProgramMain);
         oglBuffers.draw(GL_TRIANGLES, shaderProgramMain);
