@@ -10,6 +10,9 @@ import transforms.Camera;
 import transforms.Mat4PerspRH;
 import transforms.Vec3D;
 
+import java.awt.event.KeyEvent;
+
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 
@@ -28,6 +31,7 @@ public class Renderer extends AbstractRenderer{
     private int projectionLocation;
     private Camera camera;
     private Mat4PerspRH projection;
+    private boolean pressedKeys[];
 
     // Is called once
     @Override
@@ -36,6 +40,9 @@ public class Renderer extends AbstractRenderer{
         OGLUtils.printLWJLparameters();
         OGLUtils.printJAVAparameters();
         OGLUtils.shaderCheck();
+
+
+        pressedKeys = new boolean[1024];
 
         // Set the clear color
         glClearColor(0.15f, 0.15f, 0.15f, 0.15f);
@@ -82,6 +89,7 @@ public class Renderer extends AbstractRenderer{
     @Override
     public void display() {
         glViewport(0, 0, width, height);
+        handleMovement();
 
         glClearColor(0.15f,0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -94,11 +102,49 @@ public class Renderer extends AbstractRenderer{
 
     }
 
+    // Handles all movement in the scene
+    private void handleMovement(){
+        // Camera
+        handleCameraMovement();
+    }
+
+    // Handles camera movement based on player input
+    private void handleCameraMovement() {
+        if (pressedKeys[GLFW_KEY_W]){
+            camera = camera.forward(0.02f);
+        }
+        if (pressedKeys[GLFW_KEY_S]){
+            camera = camera.backward(0.02f);
+        }
+        if (pressedKeys[GLFW_KEY_A]){
+            camera = camera.left(0.02f);
+        }
+        if (pressedKeys[GLFW_KEY_D]){
+            camera = camera.right(0.02f);
+        }
+        if (pressedKeys[GLFW_KEY_R]){
+            camera = camera.up(0.02f);
+        }
+        if (pressedKeys[GLFW_KEY_F]){
+            camera = camera.down(0.02f);
+        }
+    }
+
     private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
+            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
+                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            if (action == GLFW_RELEASE){
+                pressedKeys[key] = false;
+            }
+            if (action == GLFW_PRESS){
+                pressedKeys[key] = true;
+            }
         }
     };
+
+
     
     private GLFWWindowSizeCallback wsCallback = new GLFWWindowSizeCallback() {
         @Override
@@ -124,11 +170,13 @@ public class Renderer extends AbstractRenderer{
         }
     };
 
+
+    public GLFWKeyCallback getKeyCallback() {
+        return keyCallback;
+    }
+
 /*
-	@Override
-	public GLFWKeyCallback getKeyCallback() {
-		return keyCallback;
-	}
+
 
 	@Override
 	public GLFWWindowSizeCallback getWsCallback() {
