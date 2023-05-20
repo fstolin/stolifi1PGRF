@@ -12,6 +12,7 @@ import transforms.Mat4PerspRH;
 import transforms.Vec3D;
 
 import java.nio.DoubleBuffer;
+import java.util.ArrayList;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -27,9 +28,9 @@ import static org.lwjgl.opengl.GL20.*;
 public class Renderer extends AbstractRenderer{
 
     private int shaderProgramMain;
-    private OGLBuffers oglBuffers;
     private int viewLocation;
     private int projectionLocation;
+    private int polygonMode = 0;
     private double lastFrameTime;
     private float camMovementSpeed;
     private float camBoostSpeedMultiplier;
@@ -39,6 +40,9 @@ public class Renderer extends AbstractRenderer{
     private boolean pressedKeys[];
     private boolean mouseButton2 = false;
     double ox, oy;
+    private int waveFloatLocation;
+    private ArrayList<Mesh> meshList;
+
     // Is called once
     @Override
     public void init() {
@@ -53,11 +57,13 @@ public class Renderer extends AbstractRenderer{
         camMovementSpeed = 1.5f;
         camBoostSpeedValue = 2.5f;
         camBoostSpeedMultiplier = 1f;
+        // Meshes list
+        meshList = new ArrayList<Mesh>();
 
         // Set the clear color
         glClearColor(0.15f, 0.15f, 0.15f, 0.15f);
         // Polygon mode
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        switchPolygonMode();
         glEnable(GL_DEPTH_TEST);
 
         textRenderer = new OGLTextRenderer(width, height);
@@ -66,6 +72,9 @@ public class Renderer extends AbstractRenderer{
 
         viewLocation = glGetUniformLocation(shaderProgramMain, "view");
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
+
+        Object1 mesh1 = new Object1(shaderProgramMain);
+        meshList.add(mesh1);
         
         camera = new Camera()
                 .withPosition(new Vec3D(3,3,3))
@@ -79,21 +88,7 @@ public class Renderer extends AbstractRenderer{
                 20
         );
 
-        /*
-        float[] vertexBufferData = {
-                -1, -1,
-                1, 0,
-                0, 1,
-        };
-        int[] indexBufferData = {0, 1, 2};
 
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 2)
-        };
-
-        oglBuffers = new OGLBuffers(vertexBufferData, attributes, indexBufferData);
-   */
-        oglBuffers = GridFactory.generateStripeGrid(120,60);
     }
 
     // Called each frame
@@ -108,8 +103,13 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
         glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
 
-        glUseProgram(shaderProgramMain);
-        oglBuffers.draw(GL_TRIANGLE_STRIP, shaderProgramMain);
+        drawMeshes();
+    }
+
+    private void drawMeshes() {
+        if (meshList.size() > 0) {
+            meshList.forEach((mesh) -> mesh.draw());
+        }
     }
 
     // Handles all movement in the scene
@@ -158,11 +158,31 @@ public class Renderer extends AbstractRenderer{
         return deltaTime;
     }
 
+    private void switchPolygonMode(){
+        switch (polygonMode) {
+            // Default option
+            case 0:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                polygonMode++;
+                break;
+            case 1:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                polygonMode++;
+                break;
+            case 2:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+                polygonMode = 0;
+                break;
+        }
+    }
+
     private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            if (key == GLFW_KEY_P && action == GLFW_PRESS)
+                switchPolygonMode();
             if (action == GLFW_RELEASE){
                 pressedKeys[key] = false;
             }
