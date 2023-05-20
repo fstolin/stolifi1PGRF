@@ -12,18 +12,30 @@ public class Mesh {
     protected int modelLocation;
     protected Mat4Scale scaleMatrix;
     protected Mat4Transl translMatrix;
-    protected Mat4Rot rotMatrix;
+    protected Mat4RotZ rotMatrix;
     protected OGLBuffers oglBuffers;
     protected boolean enabled;
+    protected Vec3D position;
+    protected Vec3D scale;
+    protected double rotation;
+
+    protected Vec3D defaultPos;
+    protected Vec3D defaultScale;
+    protected double defaultRot;
+
 
     Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc) {
         shaderProgram = theShaderProgram;
         modelLocation = glGetUniformLocation(shaderProgram, "model");
 
-        scaleMatrix = new Mat4Scale(1.0, 1.0, 1.0);
-        translMatrix = new Mat4Transl(xLoc, yLoc, zLoc);
-        rotMatrix = new Mat4Rot(0.0,0.0,0.0,0.0);
+        scale = new Vec3D(1.0,1.0,1.0);
+        position = new Vec3D(xLoc, yLoc, zLoc);
+        rotation = 0.0;
         enabled = true;
+
+        defaultPos = position;
+        defaultRot = rotation;
+        defaultScale = scale;
     }
 
     public void draw(){
@@ -37,6 +49,11 @@ public class Mesh {
     // Apply all transformations
     private void transform() {
         Mat4 model = new Mat4Identity();
+
+        translMatrix = new Mat4Transl(position);
+        scaleMatrix = new Mat4Scale(scale);
+        rotMatrix = new Mat4RotZ(rotation);
+
         // translate
         model = model.mul(translMatrix);
         // rotate
@@ -48,21 +65,21 @@ public class Mesh {
 
     // Translate the mesh
     public void translate(double x, double y, double z) {
-        translMatrix = new Mat4Transl(x, y, z);
+        position = position.add(new Vec3D(x, y, z));
     }
 
     // Scale the mesh
     public void scale(double x, double y, double z) {
-        scaleMatrix = new Mat4Scale(x, y , z);
+        scale = scale.add(new Vec3D(x, y , z));
     }
 
     // Scale the mesh
     public void scale(double xyz) {
-        scaleMatrix = new Mat4Scale(xyz);
+        scale = scale.add(new Vec3D(xyz, xyz, xyz));
     }
 
-    public void rotate(double a, double x, double y, double z) {
-        rotMatrix = new Mat4Rot(a, x, y, z);
+    public void rotate(double a) {
+        rotation += a;
     }
 
     // Enables drawing
@@ -82,6 +99,12 @@ public class Mesh {
         } else {
             enabled = true;
         }
+    }
+
+    public void resetTransforms() {
+        scale = defaultScale;
+        position = defaultPos;
+        rotation = defaultRot;
     }
 
 }

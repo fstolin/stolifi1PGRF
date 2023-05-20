@@ -23,6 +23,8 @@ public class Mat4Transl extends Mat4Identity {
 		mat[3][1] = y;
 		mat[3][2] = z;
 	}
+
+
 	/**
 	 * Creates a 4x4 transformation matrix equivalent to translation in 3D
 	 * 

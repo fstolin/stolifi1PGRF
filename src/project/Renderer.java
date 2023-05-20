@@ -8,6 +8,7 @@ import lwjglutils.ShaderUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import transforms.Camera;
+import transforms.Mat4OrthoRH;
 import transforms.Mat4PerspRH;
 import transforms.Vec3D;
 
@@ -35,12 +36,16 @@ public class Renderer extends AbstractRenderer{
     private float camMovementSpeed;
     private float camBoostSpeedMultiplier;
     private float camBoostSpeedValue;
+    private float transformSpeed;
     private Camera camera;
-    private Mat4PerspRH projection;
+    private Mat4OrthoRH orthoProjection;
+    private Mat4PerspRH perspProjection;
+    private boolean orthoProjectionEnabled;
     private boolean pressedKeys[];
     private boolean mouseButton2 = false;
     double ox, oy;
     private ArrayList<Mesh> meshList;
+    private Mesh activeMesh;
 
     // Is called once
     @Override
@@ -56,6 +61,8 @@ public class Renderer extends AbstractRenderer{
         camMovementSpeed = 1.5f;
         camBoostSpeedValue = 2.5f;
         camBoostSpeedMultiplier = 1f;
+        // Transform speeds
+        transformSpeed = 1.5f;
         // Meshes list
         meshList = new ArrayList<Mesh>();
 
@@ -74,6 +81,7 @@ public class Renderer extends AbstractRenderer{
 
         // ### INITIALIZE OBJECTS ###
         meshList.add(new Object1(shaderProgramMain, 0.0, 0.0, 0.0));
+        activeMesh = meshList.get(0);
         Object1 obj = new Object1(shaderProgramMain, -1.0,0.0,0.0);
         meshList.add(obj);
         
@@ -82,13 +90,14 @@ public class Renderer extends AbstractRenderer{
                 .withAzimuth(5 / 4f * Math.PI)
                 .withZenith(-1 / 5f * Math.PI);
 
-        projection = new Mat4PerspRH(
+        perspProjection = new Mat4PerspRH(
                 Math.PI / 3,
                 LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH,
                 0.1f,
                 20
         );
 
+        orthoProjection = new Mat4OrthoRH(10.0,7.5, 0.1, 100.0);
 
     }
 
@@ -115,7 +124,11 @@ public class Renderer extends AbstractRenderer{
     // Handles the uniform variables required in Renderer class
     private void handleRenderUniforms() {
         glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
-        glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
+        if (orthoProjectionEnabled) {
+            glUniformMatrix4fv(projectionLocation, false, orthoProjection.floatArray());
+        } else {
+            glUniformMatrix4fv(projectionLocation, false, perspProjection.floatArray());
+        }
     }
 
     // Handles all movement in the scene
@@ -135,6 +148,7 @@ public class Renderer extends AbstractRenderer{
         }
 
         float movementSpeed = camMovementSpeed * camBoostSpeedMultiplier * deltaTime;
+        float transformActualSpeed = transformSpeed * camBoostSpeedMultiplier * deltaTime;
 
         // WASD RF movement
         if (pressedKeys[GLFW_KEY_W]){
@@ -154,6 +168,48 @@ public class Renderer extends AbstractRenderer{
         }
         if (pressedKeys[GLFW_KEY_F]){
             camera = camera.down(movementSpeed);
+        }
+
+        // Reset the current mesh
+        if (pressedKeys[GLFW_KEY_KP_0]){
+            activeMesh.resetTransforms();
+        }
+
+        // TRANSFORMING the current mesh
+        // Scale
+        if (pressedKeys[GLFW_KEY_KP_9]){
+            activeMesh.scale(transformActualSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_KP_7]){
+            activeMesh.scale(-transformActualSpeed);
+        }
+        // Up & Down
+        if (pressedKeys[GLFW_KEY_KP_SUBTRACT]){
+            activeMesh.translate(0.0,0.0,transformActualSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_KP_ADD]){
+            activeMesh.translate(0.0,0.0,-transformActualSpeed);
+        }
+        // Left & Right
+        if (pressedKeys[GLFW_KEY_KP_4]){
+            activeMesh.translate(transformActualSpeed, 0.0,0.0);
+        }
+        if (pressedKeys[GLFW_KEY_KP_6]){
+            activeMesh.translate(-transformActualSpeed, 0.0,0.0);
+        }
+        // Back & Forward
+        if (pressedKeys[GLFW_KEY_KP_8]){
+            activeMesh.translate(0.0, transformActualSpeed, 0.0);
+        }
+        if (pressedKeys[GLFW_KEY_KP_5]){
+            activeMesh.translate(0.0, -transformActualSpeed, 0.0);
+        }
+        // Rotation
+        if (pressedKeys[GLFW_KEY_KP_1]){
+            activeMesh.rotate(0.025f * transformSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_KP_3]){
+            activeMesh.rotate(-0.025f * transformSpeed);
         }
     }
 
@@ -184,6 +240,14 @@ public class Renderer extends AbstractRenderer{
         }
     }
 
+    private void switchProjection(){
+        if (orthoProjectionEnabled) {
+            orthoProjectionEnabled = false;
+        } else {
+            orthoProjectionEnabled = true;
+        }
+    }
+
     private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -192,27 +256,49 @@ public class Renderer extends AbstractRenderer{
             // POLYGON MODES
             if (key == GLFW_KEY_P && action == GLFW_PRESS)
                 switchPolygonMode();
+            // PROJECTION SWITCH
+            if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+                switchProjection();
+            }
             // OBJECTS RENDERING
-            if (key == GLFW_KEY_1 && action == GLFW_PRESS)
-                if (meshList.size() > 0)
-                    meshList.get(0).toggleEnabled();
-            if (key == GLFW_KEY_2 && action == GLFW_PRESS)
-                if (meshList.size() > 1)
-                    meshList.get(1).toggleEnabled();
-            if (key == GLFW_KEY_3 && action == GLFW_PRESS)
-                if (meshList.size() > 2)
-                    meshList.get(2).toggleEnabled();
-            if (key == GLFW_KEY_4 && action == GLFW_PRESS)
-                if (meshList.size() > 3)
-                    meshList.get(3).toggleEnabled();
-            if (key == GLFW_KEY_5 && action == GLFW_PRESS)
-                if (meshList.size() > 4)
-                    meshList.get(4).toggleEnabled();
-            if (key == GLFW_KEY_6 && action == GLFW_PRESS)
-                if (meshList.size() > 5)
-                    meshList.get(5).toggleEnabled();
+            if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+                if (meshList.size() > 0) {
+                    activeMesh = meshList.get(0);
+                    activeMesh.toggleEnabled();
+                }
+            }
+            if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+                if (meshList.size() > 1) {
+                    activeMesh = meshList.get(1);
+                    activeMesh.toggleEnabled();
+                }
+            }
+            if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+                if (meshList.size() > 2) {
+                    activeMesh = meshList.get(2);
+                    activeMesh.toggleEnabled();
+                }
+            }
+            if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+                if (meshList.size() > 3) {
+                    activeMesh = meshList.get(3);
+                    activeMesh.toggleEnabled();
+                }
+            }
+            if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
+                if (meshList.size() > 4) {
+                    activeMesh = meshList.get(4);
+                    activeMesh.toggleEnabled();
+                }
+            }
+            if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
+                if (meshList.size() > 5) {
+                    activeMesh = meshList.get(5);
+                    activeMesh.toggleEnabled();
+                }
+            }
 
-            // SMOOTH MOVEMENT -> save to pressedKey Array
+            // SMOOTH MOVEMENT & TRANSFORMATIONS -> save to pressedKey Array
             if (action == GLFW_RELEASE){
                 pressedKeys[key] = false;
             }
