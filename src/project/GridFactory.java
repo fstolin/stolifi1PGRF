@@ -2,6 +2,7 @@ package project;
 
 import lwjglutils.OGLBuffers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GridFactory {
@@ -57,45 +58,48 @@ public class GridFactory {
         int index = 0;
 
         // Fill the vertex Buffer
-        for (int i = 0; i < n; i++){
-            for (int j = 0; j < m; j++) {
-                vertexBuffer[index++] = (j / (float) (m - 1));
-                vertexBuffer[index++] = (i / (float) (n - 1));
+        for (int row = m; row > 0; row--){
+            for (int col = 0; col < n; col++) {
+                vertexBuffer[index++] = col / (float) (n - 1);
+                vertexBuffer[index++] = (row - 1) / (float) (m - 1);
             }
         }
 
         // Index Buffer
         int index2 = 0;
-        int[] indexBuffer = new int[(2 * m * (n - 1)) + ((m - 2) * 2)];
+        //int[] indexBuffer = new int[(2 * m * (n - 1)) + ((m - 2) * 2)];
+        ArrayList<Integer> indexBufferList = new ArrayList<Integer>();
 
         for (int row = 0; row < m - 1; row++){
             for (int col = 0; col < n ; col++) {
                 if (row % 2 == 0) {
                     // Even row
-                    indexBuffer[index2++] = row * n + col;
-                    indexBuffer[index2++] = (row + 1) * n + col;
+                    indexBufferList.add(row * n + col);
+                    indexBufferList.add((row + 1) * n + col);
                 } else {
                     // Odd row
-                    indexBuffer[index2++] = (row + 1) * n + (m - 1) - col;
-                    indexBuffer[index2++] = row * n + (m - 1) - col;
+                    indexBufferList.add((row + 1) * n + (n - 1) - col);
+                    indexBufferList.add(row * n + (n - 1) - col);
                 }
             }
 
             // Degenerate triangle
             if (row < m - 2) {
                 if (row % 2 == 0) {
-                    indexBuffer[index2++] = (row + 1) * n + (n - 1);
-                    indexBuffer[index2++] = (row + 1) * n + (n - 1);
+                    indexBufferList.add((row + 1) * n + (n - 1));
+                    indexBufferList.add((row + 1) * n + (n - 1));
                 } else {
-                    indexBuffer[index2++] = (row + 1) * n;
-                    indexBuffer[index2++] = (row + 1) * n;
+                    indexBufferList.add((row + 1) * n);
+                    indexBufferList.add((row + 1) * n);
                 }
             }
         }
 
-        // [0, 4, 1, 5, 2, 6, 3, 7, 11, 7, 10, 6, 9, 5, 8, 4, 8, 12, 9, 13, 10, 14, 11, 15, 0]
-        // [0, 4, 1, 5, 2, 6, 3, 7, 7, 7, 11, 7, 10, 6, 9, 5, 8, 4, 8, 8, 12, 9, ...
-        // [0, 4, 1, 5, 2, 6, 3, 7, 7, 7, 11, 7, 10, 6, 9, 5, 8, 4, 8, 8, 8, 12
+        // ArrayList workaround
+        int indexBuffer[] = new int[indexBufferList.size()];
+        for (int i = 0; i < indexBuffer.length; i++) {
+            indexBuffer[i] = indexBufferList.get(i);
+        }
 
         // Attributes
         OGLBuffers.Attrib[] attributes = {
@@ -103,11 +107,8 @@ public class GridFactory {
         };
 
         System.out.println(Arrays.toString(indexBuffer));
-        return null;
-       // return new OGLBuffers(vertexBuffer, attributes, indexBuffer);
-    }
+        System.out.println(Arrays.toString(vertexBuffer));
 
-    public static void main(String[] args) {
-        generateStripeGrid(4,4);
+        return new OGLBuffers(vertexBuffer,attributes,indexBuffer);
     }
 }

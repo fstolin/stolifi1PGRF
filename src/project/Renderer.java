@@ -57,7 +57,8 @@ public class Renderer extends AbstractRenderer{
         // Set the clear color
         glClearColor(0.15f, 0.15f, 0.15f, 0.15f);
         // Polygon mode
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable(GL_DEPTH_TEST);
 
         textRenderer = new OGLTextRenderer(width, height);
 
@@ -92,7 +93,7 @@ public class Renderer extends AbstractRenderer{
 
         oglBuffers = new OGLBuffers(vertexBufferData, attributes, indexBufferData);
    */
-        oglBuffers = GridFactory.generateStripeGrid(8,8);
+        oglBuffers = GridFactory.generateStripeGrid(120,60);
     }
 
     // Called each frame
@@ -109,7 +110,6 @@ public class Renderer extends AbstractRenderer{
 
         glUseProgram(shaderProgramMain);
         oglBuffers.draw(GL_TRIANGLE_STRIP, shaderProgramMain);
-
     }
 
     // Handles all movement in the scene
