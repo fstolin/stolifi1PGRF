@@ -5,12 +5,13 @@ import lwjglutils.OGLBuffers;
 import lwjglutils.OGLTextRenderer;
 import lwjglutils.OGLUtils;
 import lwjglutils.ShaderUtils;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import transforms.Camera;
 import transforms.Mat4PerspRH;
 import transforms.Vec3D;
 
-import java.awt.event.KeyEvent;
+import java.nio.DoubleBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -36,7 +37,8 @@ public class Renderer extends AbstractRenderer{
     private Camera camera;
     private Mat4PerspRH projection;
     private boolean pressedKeys[];
-
+    private boolean mouseButton2 = false;
+    double ox, oy;
     // Is called once
     @Override
     public void init() {
@@ -90,14 +92,14 @@ public class Renderer extends AbstractRenderer{
 
         oglBuffers = new OGLBuffers(vertexBufferData, attributes, indexBufferData);
    */
-        oglBuffers = GridFactory.generateGrid(30, 30);
+        oglBuffers = GridFactory.generateStripeGrid(8,8);
     }
 
     // Called each frame
     @Override
     public void display() {
         glViewport(0, 0, width, height);
-        handleMovement(getDeltaTime());
+        handleKeyPresses();
 
         glClearColor(0.15f,0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -106,12 +108,13 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
 
         glUseProgram(shaderProgramMain);
-        oglBuffers.draw(GL_TRIANGLES, shaderProgramMain);
+        oglBuffers.draw(GL_TRIANGLE_STRIP, shaderProgramMain);
 
     }
 
     // Handles all movement in the scene
-    private void handleMovement(float deltaTime){
+    private void handleKeyPresses(){
+        float deltaTime = getDeltaTime();
         // Camera
         handleCameraMovement(deltaTime);
     }
@@ -180,6 +183,29 @@ public class Renderer extends AbstractRenderer{
     private GLFWMouseButtonCallback mbCallback = new GLFWMouseButtonCallback () {
         @Override
         public void invoke(long window, int button, int action, int mods) {
+            mouseButton2 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS;
+
+            if (button==GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS){
+                mouseButton2 = true;
+                DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+                DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+                glfwGetCursorPos(window, xBuffer, yBuffer);
+                ox = xBuffer.get(0);
+                oy = yBuffer.get(0);
+            }
+
+            if (button==GLFW_MOUSE_BUTTON_2 && action == GLFW_RELEASE){
+                mouseButton2 = false;
+                DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+                DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+                glfwGetCursorPos(window, xBuffer, yBuffer);
+                double x = xBuffer.get(0);
+                double y = yBuffer.get(0);
+                camera = camera.addAzimuth((double) Math.PI * (ox - x) / width)
+                        .addZenith((double) Math.PI * (oy - y) / width);
+                ox = x;
+                oy = y;
+            }
         }
 
     };
@@ -187,6 +213,12 @@ public class Renderer extends AbstractRenderer{
     private GLFWCursorPosCallback cpCallbacknew = new GLFWCursorPosCallback() {
         @Override
         public void invoke(long window, double x, double y) {
+            if (mouseButton2) {
+                camera = camera.addAzimuth((double) Math.PI * (ox - x) / width)
+                        .addZenith((double) Math.PI * (oy - y) / width);
+                ox = x;
+                oy = y;
+            }
         }
     };
     
@@ -200,6 +232,16 @@ public class Renderer extends AbstractRenderer{
         return keyCallback;
     }
 
+    @Override
+    public GLFWMouseButtonCallback getMouseCallback() {
+        return mbCallback;
+    }
+
+    @Override
+    public GLFWCursorPosCallback getCursorCallback() {
+        return cpCallbacknew;
+    }
+
 /*
 
 
@@ -208,15 +250,6 @@ public class Renderer extends AbstractRenderer{
 		return wsCallback;
 	}
 
-	@Override
-	public GLFWMouseButtonCallback getMouseCallback() {
-		return mbCallback;
-	}
-
-	@Override
-	public GLFWCursorPosCallback getCursorCallback() {
-		return cpCallbacknew;
-	}
 
 	@Override
 	public GLFWScrollCallback getScrollCallback() {
