@@ -29,6 +29,10 @@ public class Renderer extends AbstractRenderer{
     private OGLBuffers oglBuffers;
     private int viewLocation;
     private int projectionLocation;
+    private double lastFrameTime;
+    private float camMovementSpeed;
+    private float camBoostSpeedMultiplier;
+    private float camBoostSpeedValue;
     private Camera camera;
     private Mat4PerspRH projection;
     private boolean pressedKeys[];
@@ -41,8 +45,12 @@ public class Renderer extends AbstractRenderer{
         OGLUtils.printJAVAparameters();
         OGLUtils.shaderCheck();
 
-
+        // Key array
         pressedKeys = new boolean[1024];
+        // Camera movement speeds
+        camMovementSpeed = 1.5f;
+        camBoostSpeedValue = 2.5f;
+        camBoostSpeedMultiplier = 1f;
 
         // Set the clear color
         glClearColor(0.15f, 0.15f, 0.15f, 0.15f);
@@ -89,7 +97,7 @@ public class Renderer extends AbstractRenderer{
     @Override
     public void display() {
         glViewport(0, 0, width, height);
-        handleMovement();
+        handleMovement(getDeltaTime());
 
         glClearColor(0.15f,0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -103,31 +111,48 @@ public class Renderer extends AbstractRenderer{
     }
 
     // Handles all movement in the scene
-    private void handleMovement(){
+    private void handleMovement(float deltaTime){
         // Camera
-        handleCameraMovement();
+        handleCameraMovement(deltaTime);
     }
 
     // Handles camera movement based on player input
-    private void handleCameraMovement() {
+    private void handleCameraMovement(float deltaTime) {
+        // Speed multiplier
+        if (pressedKeys[GLFW_KEY_LEFT_SHIFT]){
+            camBoostSpeedMultiplier = camBoostSpeedValue;
+        } else {
+            camBoostSpeedMultiplier = 1f;
+        }
+
+        float movementSpeed = camMovementSpeed * camBoostSpeedMultiplier * deltaTime;
+
+        // WASD RF movement
         if (pressedKeys[GLFW_KEY_W]){
-            camera = camera.forward(0.02f);
+            camera = camera.forward(movementSpeed);
         }
         if (pressedKeys[GLFW_KEY_S]){
-            camera = camera.backward(0.02f);
+            camera = camera.backward(movementSpeed);
         }
         if (pressedKeys[GLFW_KEY_A]){
-            camera = camera.left(0.02f);
+            camera = camera.left(movementSpeed);
         }
         if (pressedKeys[GLFW_KEY_D]){
-            camera = camera.right(0.02f);
+            camera = camera.right(movementSpeed);
         }
         if (pressedKeys[GLFW_KEY_R]){
-            camera = camera.up(0.02f);
+            camera = camera.up(movementSpeed);
         }
         if (pressedKeys[GLFW_KEY_F]){
-            camera = camera.down(0.02f);
+            camera = camera.down(movementSpeed);
         }
+    }
+
+    private float getDeltaTime(){
+        double currentTime = glfwGetTime();
+        float deltaTime = (float) (currentTime - lastFrameTime);
+        lastFrameTime = currentTime;
+        return deltaTime;
     }
 
     private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
