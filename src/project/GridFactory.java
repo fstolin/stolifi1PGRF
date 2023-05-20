@@ -106,9 +106,6 @@ public class GridFactory {
                 new OGLBuffers.Attrib("inPosition", 2)
         };
 
-        System.out.println(Arrays.toString(indexBuffer));
-        System.out.println(Arrays.toString(vertexBuffer));
-
         return new OGLBuffers(vertexBuffer,attributes,indexBuffer);
     }
 }

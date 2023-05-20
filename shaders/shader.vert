@@ -1,11 +1,12 @@
 #version 330
 
 in vec2 inPosition;
-out vec3 colorPosition;
+out vec4 colorPosition;
 
 uniform float waveFloat;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 model;
 
 float bendFunction(vec2 coords) {
     coords = (coords * 2) - 1;
@@ -15,7 +16,7 @@ float bendFunction(vec2 coords) {
 void main() {
     vec4 position = vec4(inPosition, bendFunction(inPosition.xy), 1.0f);
 
-    colorPosition = position.xyz;
-    gl_Position = projection * view * position;
+    colorPosition = model * position;
+    gl_Position = projection * view * model * position;
 }
 

@@ -40,7 +40,6 @@ public class Renderer extends AbstractRenderer{
     private boolean pressedKeys[];
     private boolean mouseButton2 = false;
     double ox, oy;
-    private int waveFloatLocation;
     private ArrayList<Mesh> meshList;
 
     // Is called once
@@ -73,8 +72,10 @@ public class Renderer extends AbstractRenderer{
         viewLocation = glGetUniformLocation(shaderProgramMain, "view");
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
 
-        Object1 mesh1 = new Object1(shaderProgramMain);
-        meshList.add(mesh1);
+        // ### INITIALIZE OBJECTS ###
+        meshList.add(new Object1(shaderProgramMain, 0.0, 0.0, 0.0));
+        Object1 obj = new Object1(shaderProgramMain, -1.0,0.0,0.0);
+        meshList.add(obj);
         
         camera = new Camera()
                 .withPosition(new Vec3D(3,3,3))
@@ -100,16 +101,21 @@ public class Renderer extends AbstractRenderer{
         glClearColor(0.15f,0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
-        glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
-
+        handleRenderUniforms();
         drawMeshes();
     }
 
+    // Draws all meshes from the mesh list
     private void drawMeshes() {
         if (meshList.size() > 0) {
             meshList.forEach((mesh) -> mesh.draw());
         }
+    }
+
+    // Handles the uniform variables required in Renderer class
+    private void handleRenderUniforms() {
+        glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
+        glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
     }
 
     // Handles all movement in the scene
@@ -151,6 +157,7 @@ public class Renderer extends AbstractRenderer{
         }
     }
 
+    // Returns the delta time
     private float getDeltaTime(){
         double currentTime = glfwGetTime();
         float deltaTime = (float) (currentTime - lastFrameTime);
@@ -158,6 +165,7 @@ public class Renderer extends AbstractRenderer{
         return deltaTime;
     }
 
+    // Switches the polygon mode - FILL, LINE, POINT -> hotkey: P
     private void switchPolygonMode(){
         switch (polygonMode) {
             // Default option
@@ -181,8 +189,30 @@ public class Renderer extends AbstractRenderer{
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            // POLYGON MODES
             if (key == GLFW_KEY_P && action == GLFW_PRESS)
                 switchPolygonMode();
+            // OBJECTS RENDERING
+            if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+                if (meshList.size() > 0)
+                    meshList.get(0).toggleEnabled();
+            if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+                if (meshList.size() > 1)
+                    meshList.get(1).toggleEnabled();
+            if (key == GLFW_KEY_3 && action == GLFW_PRESS)
+                if (meshList.size() > 2)
+                    meshList.get(2).toggleEnabled();
+            if (key == GLFW_KEY_4 && action == GLFW_PRESS)
+                if (meshList.size() > 3)
+                    meshList.get(3).toggleEnabled();
+            if (key == GLFW_KEY_5 && action == GLFW_PRESS)
+                if (meshList.size() > 4)
+                    meshList.get(4).toggleEnabled();
+            if (key == GLFW_KEY_6 && action == GLFW_PRESS)
+                if (meshList.size() > 5)
+                    meshList.get(5).toggleEnabled();
+
+            // SMOOTH MOVEMENT -> save to pressedKey Array
             if (action == GLFW_RELEASE){
                 pressedKeys[key] = false;
             }

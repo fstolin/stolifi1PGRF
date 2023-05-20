@@ -8,8 +8,8 @@ public class Object1 extends Mesh {
 
     private int waveFloatLocation;
 
-    Object1(int theShaderProgram) {
-        super(theShaderProgram);
+    Object1(int theShaderProgram, double xLoc, double yLoc, double zLoc) {
+        super(theShaderProgram, xLoc, yLoc, zLoc);
 
         waveFloatLocation = glGetUniformLocation(theShaderProgram, "waveFloat");
         oglBuffers = GridFactory.generateStripeGrid(120,60);

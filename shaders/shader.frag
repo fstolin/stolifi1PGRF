@@ -1,8 +1,8 @@
 #version 330
 
 out vec4 outColor;
-in vec3 colorPosition;
+in vec4 colorPosition;
 
 void main() {
-    outColor = vec4(colorPosition, 1.0);
+    outColor = vec4(colorPosition.xyz, 1.0);
 }
