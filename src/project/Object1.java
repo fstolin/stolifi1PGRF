@@ -1,6 +1,7 @@
 package project;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glUniform1f;
 
@@ -12,7 +13,7 @@ public class Object1 extends Mesh {
         super(theShaderProgram, xLoc, yLoc, zLoc);
 
         waveFloatLocation = glGetUniformLocation(theShaderProgram, "waveFloat");
-        oglBuffers = GridFactory.generateStripeGrid(120,60);
+        oglBuffers = GridFactory.generateStripeGrid(80,60);
     }
 
     @Override

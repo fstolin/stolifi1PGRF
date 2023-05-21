@@ -17,7 +17,6 @@ public class GridFactory {
         float[] vertexBuffer = new float[m * n * 2];
         // helper variable to index the vertexBuffer
         int index = 0;
-
         // Fill the vertex Buffer
         for (int i = 0; i < n; i++){
             for (int j = 0; j < m; j++) {
@@ -25,7 +24,6 @@ public class GridFactory {
                 vertexBuffer[index++] = (i / (float) (n - 1));
             }
         }
-
         // Index Buffer
         int index2 = 0;
         int[] indexBuffer = new int[2 * 3 * (m - 1) * (n - 1)];
@@ -35,17 +33,14 @@ public class GridFactory {
                 indexBuffer[index2++] = (j + rowOffset);
                 indexBuffer[index2++] = (j + m + rowOffset);
                 indexBuffer[index2++] = (j + 1 + rowOffset);
-
                 indexBuffer[index2++] = (j + 1 + rowOffset);
                 indexBuffer[index2++] = (j + m + rowOffset);
                 indexBuffer[index2++] = (j + m + 1 + rowOffset);
-
             }
         }
-
         // Attributes
         OGLBuffers.Attrib[] attributes = {
-            new OGLBuffers.Attrib("inPosition", 2)
+                new OGLBuffers.Attrib("inPosition", 2)
         };
 
         // Return

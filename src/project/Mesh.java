@@ -22,6 +22,7 @@ public class Mesh {
     protected Vec3D defaultPos;
     protected Vec3D defaultScale;
     protected double defaultRot;
+    protected int triangleMode;
 
 
     Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc) {
@@ -36,6 +37,8 @@ public class Mesh {
         defaultPos = position;
         defaultRot = rotation;
         defaultScale = scale;
+
+        triangleMode = GL_TRIANGLE_STRIP;
     }
 
     public void draw(){
@@ -43,7 +46,7 @@ public class Mesh {
 
         glUseProgram(shaderProgram);
         this.transform();
-        oglBuffers.draw(GL_TRIANGLE_STRIP, shaderProgram);
+        oglBuffers.draw(triangleMode, shaderProgram);
     }
 
     // Apply all transformations

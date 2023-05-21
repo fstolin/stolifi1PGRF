@@ -88,7 +88,7 @@ public class Renderer extends AbstractRenderer{
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.15f,
-                                            0.f, 0.0f, 5.f, 0.64f,
+                                            3.f, 3.0f, 0.f, 0.64f,
                                             shaderProgramMain);
 
         // ### CAMERA ###

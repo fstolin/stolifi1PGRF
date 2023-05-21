@@ -18,11 +18,11 @@ uniform DirectionalLight directionalLight;
 void main() {
     // struct color * ambient intensity
     vec4 ambientColor = vec4(directionalLight.color, 1.0f) * directionalLight.ambientIntensity;
+    // ### DIFFUSE FACTOR ###
     // calculate the diffuse factor -> cos angle normal * direction
     // A.B =´|A||B|cos(angle) -> when we normalize |A|  and |B| = 1
     // max returns the greater of 2 values
     float diffuseFactor = max(dot(normalize(normal), normalize(directionalLight.direction)), 0.f);
-
     vec4 diffuseColor = vec4(directionalLight.color, 1.0f) * directionalLight.diffuseIntensity * diffuseFactor;
 
 
