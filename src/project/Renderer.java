@@ -38,6 +38,7 @@ public class Renderer extends AbstractRenderer{
     private float camBoostSpeedValue;
     private float transformSpeed;
     private Camera camera;
+    private Light directionalLight;
     private Mat4OrthoRH orthoProjection;
     private Mat4PerspRH perspProjection;
     private boolean orthoProjectionEnabled;
@@ -84,12 +85,19 @@ public class Renderer extends AbstractRenderer{
         activeMesh = meshList.get(0);
         Object1 obj = new Object1(shaderProgramMain, -1.0,0.0,0.0);
         meshList.add(obj);
-        
+
+        // ### INITIALIZE DIRECTIONAL LIGHT ###
+        directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.15f,
+                                            0.f, 0.0f, 5.f, 0.64f,
+                                            shaderProgramMain);
+
+        // ### CAMERA ###
         camera = new Camera()
                 .withPosition(new Vec3D(3,3,3))
                 .withAzimuth(5 / 4f * Math.PI)
                 .withZenith(-1 / 5f * Math.PI);
 
+        // ## PROJECTIONS ##
         perspProjection = new Mat4PerspRH(
                 Math.PI / 3,
                 LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH,
@@ -111,6 +119,7 @@ public class Renderer extends AbstractRenderer{
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         handleRenderUniforms();
+        directionalLight.useLight();
         drawMeshes();
     }
 

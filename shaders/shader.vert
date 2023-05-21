@@ -15,8 +15,7 @@ const float deltaDif = 0.001f;
 // Cartesian #1
 float bendFunction(vec2 coords) {
     coords = (coords * 2) - 1;
-    //return 0.5f * cos(sqrt(waveFloat * coords.x * coords.x + 20 * coords.y * coords.y));
-    return 0.f;
+    return 0.5f * cos(sqrt(waveFloat * coords.x * coords.x + 20 * coords.y * coords.y));
 }
 
 // Normals
@@ -29,14 +28,13 @@ vec3 getNormal(vec2 xyPosition) {
     vec3 deltaX = vec3(xVecPos, bendFunction(xVecPos)) - vec3(xVecNeg, bendFunction(xVecNeg));
     vec3 deltaY = vec3(yVecPos, bendFunction(yVecPos)) - vec3(yVecNeg, bendFunction(yVecNeg));
 
-    return normalize(cross(deltaY, deltaX));
+    return normalize(cross(deltaX, deltaY));
 }
 
 
 void main() {
     vec4 position = vec4(inPosition, bendFunction(inPosition.xy), 1.0f);
     normal = transpose(inverse(mat3(model))) * getNormal(position.xy);
-
     colorPosition = model * position;
     gl_Position = projection * view * model * position;
 }
