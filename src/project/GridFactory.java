@@ -50,6 +50,7 @@ public class GridFactory {
 
         // Return
         return new OGLBuffers(vertexBuffer, attributes, indexBuffer);
+
     }
 
     static OGLBuffers generateStripeGrid(int m, int n) {
