@@ -16,16 +16,22 @@ struct DirectionalLight
 uniform DirectionalLight directionalLight;
 uniform int shaderMode;
 
-void main() {
+vec4 getLightColor() {
+    // ### AMBIENT ###
     // struct color * ambient intensity
     vec4 ambientColor = vec4(directionalLight.color, 1.0f) * directionalLight.ambientIntensity;
-    // ### DIFFUSE FACTOR ###
+    // ### DIFFUSE COLOR ###
     // calculate the diffuse factor -> cos angle normal * direction
     // A.B =´|A||B|cos(angle) -> when we normalize |A|  and |B| = 1
     // max returns the greater of 2 values
     float diffuseFactor = max(dot(normalize(normal), normalize(directionalLight.direction)), 0.f);
     vec4 diffuseColor = vec4(directionalLight.color, 1.0f) * directionalLight.diffuseIntensity * diffuseFactor;
 
+    // Return the value
+    return (ambientColor + diffuseColor);
+}
+
+void main() {
     // Decide which shaderMode to use - render textures, xyz location, normals.. etc.
     switch(shaderMode) {
         // default
@@ -42,8 +48,7 @@ void main() {
             break;
         // lighting
         case 3:
-            outColor = vec4(0.6,0.6,0.6,1.0) * (ambientColor + diffuseColor);
+            outColor = vec4(0.6,0.6,0.6,1.0) * (getLightColor());
             break;
     }
-
 }

@@ -170,6 +170,7 @@ public class Renderer extends AbstractRenderer{
 
         float movementSpeed = camMovementSpeed * camBoostSpeedMultiplier * deltaTime;
         float transformActualSpeed = transformSpeed * camBoostSpeedMultiplier * deltaTime;
+        float lightDimSpeed = directionalLight.intensityModificationSpeed * deltaTime;
 
         // WASD RF movement
         if (pressedKeys[GLFW_KEY_W]){
@@ -231,6 +232,21 @@ public class Renderer extends AbstractRenderer{
         }
         if (pressedKeys[GLFW_KEY_KP_3]){
             activeMesh.rotate(-0.025f * transformSpeed);
+        }
+
+        // Light Dimming - ambient
+        if (pressedKeys[GLFW_KEY_N]){
+            directionalLight.decreaseAmbientIntensity(lightDimSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_M]){
+            directionalLight.increaseAmbientIntensity(lightDimSpeed);
+        }
+        // Light Dimming - diffuse
+        if (pressedKeys[GLFW_KEY_K]){
+            directionalLight.decreaseDiffuseIntensity(lightDimSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_L]){
+            directionalLight.increaseDiffuseIntensity(lightDimSpeed);
         }
     }
 

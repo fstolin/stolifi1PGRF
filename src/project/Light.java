@@ -11,6 +11,7 @@ public class Light {
     protected Vec3D direction;
     protected float ambientIntensity;
     protected float diffuseIntensity;
+    protected final float intensityModificationSpeed;
     protected int colorLocation, directionLocation, ambientIntensityLocation, diffuseIntensityLocation;
 
     Light(float red, float green, float blue, float aIntensity,
@@ -21,6 +22,8 @@ public class Light {
             direction = new Vec3D(xDir, yDir, zDir);
             ambientIntensity = aIntensity;
             diffuseIntensity = dIntensity;
+            // Speed at which modifications to intensity are set
+            intensityModificationSpeed = 0.2f;
             shaderProgram = shaderProgramLoc;
 
             colorLocation = glGetUniformLocation(shaderProgram, "directionalLight.color");
@@ -35,6 +38,22 @@ public class Light {
 
         glUniform3f(directionLocation, (float) direction.getX(), (float) direction.getY(), (float) direction.getZ());
         glUniform1f(diffuseIntensityLocation, diffuseIntensity);
+    }
+
+    public void decreaseAmbientIntensity(float dimSpeed){
+        if (ambientIntensity > 0.0f) ambientIntensity -= dimSpeed;
+    }
+
+    public void increaseAmbientIntensity(float dimSpeed){
+        if (ambientIntensity < 1.0f) ambientIntensity += dimSpeed;
+    }
+
+    public void decreaseDiffuseIntensity(float dimSpeed){
+        if (diffuseIntensity > 0.0f) diffuseIntensity -= dimSpeed;
+    }
+
+    public void increaseDiffuseIntensity(float dimSpeed){
+        if (diffuseIntensity < 1.0f) diffuseIntensity += dimSpeed;
     }
 
 
