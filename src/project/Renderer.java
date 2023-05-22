@@ -92,6 +92,8 @@ public class Renderer extends AbstractRenderer{
         activeMesh = meshList.get(0);
         WaveObject obj = new WaveObject(shaderProgramMain, -1.0,0.0,0.0);
         meshList.add(obj);
+        Mesh mesh3 = new Mesh(shaderProgramMain, 0.f, 2.f, 0.f);
+        meshList.add((mesh3));
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.15f,

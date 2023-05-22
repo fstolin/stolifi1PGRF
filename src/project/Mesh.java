@@ -38,6 +38,7 @@ public class Mesh {
         defaultRot = rotation;
         defaultScale = scale;
 
+        oglBuffers = GridFactory.generateStripeGrid(80,80);
         triangleMode = GL_TRIANGLE_STRIP;
     }
 
