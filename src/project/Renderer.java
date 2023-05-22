@@ -1,7 +1,6 @@
 package project;
 
 
-import lwjglutils.OGLBuffers;
 import lwjglutils.OGLTextRenderer;
 import lwjglutils.OGLUtils;
 import lwjglutils.ShaderUtils;
@@ -49,6 +48,7 @@ public class Renderer extends AbstractRenderer{
     double ox, oy;
     private ArrayList<Mesh> meshList;
     private Mesh activeMesh;
+    private int meshIDLocation;
 
     // Is called once
     @Override
@@ -85,11 +85,12 @@ public class Renderer extends AbstractRenderer{
         viewLocation = glGetUniformLocation(shaderProgramMain, "view");
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
         shaderModeLocation = glGetUniformLocation(shaderProgramMain, "shaderMode");
+        meshIDLocation = glGetUniformLocation(shaderProgramMain, "meshID");
 
         // ### INITIALIZE OBJECTS ###
-        meshList.add(new Object1(shaderProgramMain, 0.0, 0.0, 0.0));
+        meshList.add(new WaveObject(shaderProgramMain, 0.0, 0.0, 0.0));
         activeMesh = meshList.get(0);
-        Object1 obj = new Object1(shaderProgramMain, -1.0,0.0,0.0);
+        WaveObject obj = new WaveObject(shaderProgramMain, -1.0,0.0,0.0);
         meshList.add(obj);
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
@@ -131,8 +132,12 @@ public class Renderer extends AbstractRenderer{
 
     // Draws all meshes from the mesh list
     private void drawMeshes() {
-        if (meshList.size() > 0) {
-            meshList.forEach((mesh) -> mesh.draw());
+        for (int i = 0; i < meshList.size(); i++) {
+            // Draw the mesh
+            Mesh theMesh = meshList.get(i);
+            theMesh.draw();
+            // Update its shape - based on it's id
+            glUniform1i(meshIDLocation, i);
         }
     }
 

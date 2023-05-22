@@ -1,15 +1,15 @@
 package project;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glUniform1f;
 
-public class Object1 extends Mesh {
+// Object which changes during time using sin function
+public class WaveObject extends Mesh {
 
     private int waveFloatLocation;
 
-    Object1(int theShaderProgram, double xLoc, double yLoc, double zLoc) {
+    WaveObject(int theShaderProgram, double xLoc, double yLoc, double zLoc) {
         super(theShaderProgram, xLoc, yLoc, zLoc);
 
         waveFloatLocation = glGetUniformLocation(theShaderProgram, "waveFloat");
