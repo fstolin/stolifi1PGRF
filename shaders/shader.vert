@@ -23,7 +23,20 @@ float bendFunction(vec2 coords) {
 // Cartesian #2
 float bendFunction2(vec2 coords) {
     coords = (coords * 2) - 1;
-    return sin(2f * coords.x * coords.x + 0.25 * coords.y);
+    return sin(0.8f * coords.x * coords.x + 0.25 * coords.y - 2.5f);
+}
+
+// returns the Z of the adequate function
+float getZPositionById(vec2 position) {
+    // Each case is different object & shape
+    switch (meshID) {
+        case 0:
+        return bendFunction(position);
+        case 1:
+        return bendFunction2(position);
+    }
+    // default
+    return 0.0f;
 }
 
 // Normals
@@ -33,28 +46,14 @@ vec3 getNormal(vec2 xyPosition) {
     vec2 yVecPos = vec2(xyPosition.x, xyPosition.y + deltaDif);
     vec2 yVecNeg = vec2(xyPosition.x, xyPosition.y - deltaDif);
 
-    vec3 deltaX = vec3(xVecPos, bendFunction(xVecPos)) - vec3(xVecNeg, bendFunction(xVecNeg));
-    vec3 deltaY = vec3(yVecPos, bendFunction(yVecPos)) - vec3(yVecNeg, bendFunction(yVecNeg));
+    vec3 deltaX = vec3(xVecPos, getZPositionById(xVecPos)) - vec3(xVecNeg, getZPositionById(xVecNeg));
+    vec3 deltaY = vec3(yVecPos, getZPositionById(yVecPos)) - vec3(yVecNeg, getZPositionById(yVecNeg));
 
     return normalize(cross(deltaX, deltaY));
 }
 
-// Returns the correspoindg position for the shape based on MeshID
-vec4 getPositionById() {
-    // Each case is different object & shape
-    switch (meshID) {
-        case 0:
-            return vec4(inPosition.xy, bendFunction(inPosition.xy), 1.0f);
-        case 1:
-            return vec4(inPosition.xy, bendFunction2(inPosition.xy), 1.0f);
-    }
-    // default = plane -> shouldn't happen
-    return vec4(inPosition.xy, 0.0f, 1.0f);
-}
-
-
 void main() {
-    vec4 position = getPositionById();
+    vec4 position = vec4(inPosition, getZPositionById(inPosition), 1.0f);
     // Normal transformation
     normal = transpose(inverse(mat3(model))) * getNormal(position.xy);
     // Color xyz position
