@@ -7,6 +7,7 @@ uniform float waveFloat;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
+uniform int shaderMode;
 
 out vec3 normal;
 

@@ -42,6 +42,8 @@ public class Renderer extends AbstractRenderer{
     private Mat4OrthoRH orthoProjection;
     private Mat4PerspRH perspProjection;
     private boolean orthoProjectionEnabled;
+    private int shaderMode;
+    private int shaderModeLocation;
     private boolean pressedKeys[];
     private boolean mouseButton2 = false;
     double ox, oy;
@@ -55,6 +57,9 @@ public class Renderer extends AbstractRenderer{
         OGLUtils.printLWJLparameters();
         OGLUtils.printJAVAparameters();
         OGLUtils.shaderCheck();
+
+        // What to render - texture, xyz, normals etc. 0 = default
+        shaderMode = 0;
 
         // Key array
         pressedKeys = new boolean[1024];
@@ -79,6 +84,7 @@ public class Renderer extends AbstractRenderer{
 
         viewLocation = glGetUniformLocation(shaderProgramMain, "view");
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
+        shaderModeLocation = glGetUniformLocation(shaderProgramMain, "shaderMode");
 
         // ### INITIALIZE OBJECTS ###
         meshList.add(new Object1(shaderProgramMain, 0.0, 0.0, 0.0));
@@ -133,6 +139,7 @@ public class Renderer extends AbstractRenderer{
     // Handles the uniform variables required in Renderer class
     private void handleRenderUniforms() {
         glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
+        glUniform1i(shaderModeLocation, shaderMode);
         if (orthoProjectionEnabled) {
             glUniformMatrix4fv(projectionLocation, false, orthoProjection.floatArray());
         } else {
@@ -147,7 +154,7 @@ public class Renderer extends AbstractRenderer{
         handleCameraMovement(deltaTime);
     }
 
-    // Handles camera movement based on player input
+    // Handles camera movement based on player input - handles keypress that need to be smooth
     private void handleCameraMovement(float deltaTime) {
         // Speed multiplier
         if (pressedKeys[GLFW_KEY_LEFT_SHIFT]){
@@ -249,6 +256,16 @@ public class Renderer extends AbstractRenderer{
         }
     }
 
+    // Switches the shaderMode - rendering textures, xyz, normals, lighting etc.
+    private void switchShaderMode(){
+        int shaderModesCount = 3;
+        if (shaderMode >= shaderModesCount) {
+            shaderMode = 0;
+        } else {
+            shaderMode++;
+        }
+    }
+
     private void switchProjection(){
         if (orthoProjectionEnabled) {
             orthoProjectionEnabled = false;
@@ -257,6 +274,7 @@ public class Renderer extends AbstractRenderer{
         }
     }
 
+    // Handle key presses that don't have to be smooth
     private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -268,6 +286,10 @@ public class Renderer extends AbstractRenderer{
             // PROJECTION SWITCH
             if (key == GLFW_KEY_O && action == GLFW_PRESS) {
                 switchProjection();
+            }
+            // SHADERMODE SWITCH
+            if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+                switchShaderMode();
             }
             // OBJECTS RENDERING
             if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
