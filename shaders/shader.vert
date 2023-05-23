@@ -37,7 +37,7 @@ vec3 bendFunction2(vec2 coords) {
 vec3 objSpehrical1(vec2 position) {
     float zen = position.x * PI;
     float azi = position.y * 2.f * PI;
-    float rad = 1.f + cos(2.f * azi);
+    float rad = 0.5f + cos(1.25f * azi);
 
     // to Cartesian
     // x = rad * sin(zenith) * cos (azimuth)

@@ -114,13 +114,13 @@ public class Renderer extends AbstractRenderer{
     }
 
     private void initializeObjects(){
-        meshList.add(new WaveObject(shaderProgramMain, 0.0, 0.0, 0.0));
+        meshList.add(new WaveObject(shaderProgramMain, 0.0, 0.0, 0.0, "waveObject1"));
         activeMesh = meshList.get(0);
-        WaveObject obj = new WaveObject(shaderProgramMain, -1.0,0.0,0.0);
+        WaveObject obj = new WaveObject(shaderProgramMain, -1.0,0.0,0.0, "staticObjectCart");
         meshList.add(obj);
-        Mesh mesh3 = new Mesh(shaderProgramMain, 0.f, 2.f, 0.f);
+        Mesh mesh3 = new Mesh(shaderProgramMain, 0.f, 8.f, 0.f, "Sphere");
         meshList.add((mesh3));
-        Mesh mesh4 = new Mesh(shaderProgramMain, 0.f,8.f, 0.0f);
+        Mesh mesh4 = new Mesh(shaderProgramMain, 0.f,4.f, 0.0f, "SphericalObejct2");
         meshList.add(mesh4);
     }
 
@@ -143,9 +143,9 @@ public class Renderer extends AbstractRenderer{
         for (int i = 0; i < meshList.size(); i++) {
             // Draw the mesh
             Mesh theMesh = meshList.get(i);
-            theMesh.draw();
             // Update its shape - based on it's id
             glUniform1i(meshIDLocation, i);
+            theMesh.draw();
         }
     }
 
@@ -325,36 +325,42 @@ public class Renderer extends AbstractRenderer{
                 if (meshList.size() > 0) {
                     activeMesh = meshList.get(0);
                     activeMesh.toggleEnabled();
+                    System.out.println(activeMesh.name);
                 }
             }
             if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
                 if (meshList.size() > 1) {
                     activeMesh = meshList.get(1);
                     activeMesh.toggleEnabled();
+                    System.out.println(activeMesh.name);
                 }
             }
             if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
                 if (meshList.size() > 2) {
                     activeMesh = meshList.get(2);
                     activeMesh.toggleEnabled();
+                    System.out.println(activeMesh.name);
                 }
             }
             if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
                 if (meshList.size() > 3) {
                     activeMesh = meshList.get(3);
                     activeMesh.toggleEnabled();
+                    System.out.println(activeMesh.name);
                 }
             }
             if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
                 if (meshList.size() > 4) {
                     activeMesh = meshList.get(4);
                     activeMesh.toggleEnabled();
+                    System.out.println(activeMesh.name);
                 }
             }
             if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
                 if (meshList.size() > 5) {
                     activeMesh = meshList.get(5);
                     activeMesh.toggleEnabled();
+                    System.out.println(activeMesh.name);
                 }
             }
 

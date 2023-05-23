@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL20.*;
 public class Mesh {
 
     protected int shaderProgram;
+    protected String name;
     protected int modelLocation;
     protected Mat4Scale scaleMatrix;
     protected Mat4Transl translMatrix;
@@ -25,7 +26,7 @@ public class Mesh {
     protected int triangleMode;
 
 
-    Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc) {
+    Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
         shaderProgram = theShaderProgram;
         modelLocation = glGetUniformLocation(shaderProgram, "model");
 
@@ -37,6 +38,7 @@ public class Mesh {
         defaultPos = position;
         defaultRot = rotation;
         defaultScale = scale;
+        this.name = name;
 
         oglBuffers = GridFactory.generateStripeGrid(80,80);
         triangleMode = GL_TRIANGLE_STRIP;
