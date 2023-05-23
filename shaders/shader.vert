@@ -50,14 +50,14 @@ vec3 objSpehrical1(vec2 position) {
     return vec3(x, y, z);
 }
 
-// Sphere testing
+// Sphere testing - spherical #2
 vec3 sphereShape(vec2 position) {
     // Zenith - 0 - 1pi
     float zen = PI * position.x;
     // Azimuth - 0 - 2pi
-    float azi = 2 * PI * position.y;
+    float azi = 2.0f * PI * position.y;
     // Radius
-    float rad = 0.3f;
+    float rad = 1.2f;
 
     // to Cartesian
     // x = rad * sin(zenith) * cos (azimuth)
@@ -70,6 +70,36 @@ vec3 sphereShape(vec2 position) {
     return vec3(x, y, z);
 }
 
+// Cylindrical #1 - basic Sombrero
+vec3 cylindrical1(vec2 position) {
+
+    float r = position.x * 1.0f * PI;
+    float azimut = position.y * 2.f * PI;
+    float v = 2.f * sin(r);
+
+    float x = r * cos(azimut);
+    float y = r * sin(azimut);
+    float z = v;
+
+    return vec3(x, y, z);
+}
+
+// Cylindrical #2 - shakey Cylinder
+vec3 cylindrical2(vec2 position) {
+    float u = position.x * 2.0f * PI;
+    float v = position.y * 2.0f * PI;
+
+    float r = sqrt(pow(2.0 * cos(u) + sin(v), 2.0) + pow(3.0 * sin(u), 2.0));
+    float azimuth = atan(3.0 * sin(u), 2.0 * cos(u) + sin(v));
+
+    float x = r * cos(azimuth);
+    float y = r * sin(azimuth);
+    float z = v;
+
+    return vec3(x, y, z);
+
+}
+
 // returns the Z of the adequate function
 vec3 getPositionById(vec2 position) {
     // Each case is different object & shape
@@ -78,6 +108,8 @@ vec3 getPositionById(vec2 position) {
         case 1: return bendFunction2(position);
         case 2: return sphereShape(position);
         case 3: return objSpehrical1(position);
+        case 4: return cylindrical1(position);
+        case 5: return cylindrical2(position);
     }
     // default
     return vec3(0.f, 1.f, 2.f);

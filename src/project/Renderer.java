@@ -92,14 +92,14 @@ public class Renderer extends AbstractRenderer{
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.07f,
-                                            0.f, 0.0f, 5.f, 0.54f,
+                                            3.f, 3.0f, 5.f, 0.54f,
                                             shaderProgramMain);
 
         // ### CAMERA ###
         camera = new Camera()
                 .withPosition(new Vec3D(3,3,3))
-                .withAzimuth(5 / 4f * Math.PI)
-                .withZenith(-1 / 5f * Math.PI);
+                .withAzimuth(5.5f / 4f * Math.PI)
+                .withZenith(-0.6 / 5f * Math.PI);
 
         // ## PROJECTIONS ##
         perspProjection = new Mat4PerspRH(
@@ -114,14 +114,18 @@ public class Renderer extends AbstractRenderer{
     }
 
     private void initializeObjects(){
-        meshList.add(new WaveObject(shaderProgramMain, 0.0, 0.0, 0.0, "waveObject1"));
+        meshList.add(new WaveObject(shaderProgramMain, 0.0f, 0.0f, 0.0f, "waveObject1"));
         activeMesh = meshList.get(0);
-        WaveObject obj = new WaveObject(shaderProgramMain, -1.0,0.0,0.0, "staticObjectCart");
+        WaveObject obj = new WaveObject(shaderProgramMain, -2.0f, 0.0f,1.0f, "staticObjectCart");
         meshList.add(obj);
-        Mesh mesh3 = new Mesh(shaderProgramMain, 0.f, 8.f, 0.f, "Sphere");
+        Mesh mesh3 = new Mesh(shaderProgramMain, -2.0f, -3.0f, 0.f, "Sphere");
         meshList.add((mesh3));
-        Mesh mesh4 = new Mesh(shaderProgramMain, 0.f,4.f, 0.0f, "SphericalObejct2");
+        Mesh mesh4 = new Mesh(shaderProgramMain, -0.0f,-3.0f, 0.0f, "SphericalObejct2");
         meshList.add(mesh4);
+        Mesh mesh5 = new Mesh(shaderProgramMain, 3.0f, -10.0f, 0.0f, "ShakeyCylinder");
+        meshList.add(mesh5);
+        Mesh mesh6 = new Mesh(shaderProgramMain, -5.0f, -10.0f, 0.0f, "cylinder");
+        meshList.add(mesh6);
     }
 
     // Called each frame
