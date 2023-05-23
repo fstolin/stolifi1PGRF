@@ -309,7 +309,7 @@ public class Renderer extends AbstractRenderer{
 
     // Switches the shaderMode - rendering textures, xyz, normals, lighting etc.
     private void switchShaderMode(){
-        int shaderModesCount = 4;
+        int shaderModesCount = 5;
         if (shaderMode >= shaderModesCount) {
             shaderMode = 0;
         } else {

@@ -5,6 +5,7 @@ out vec4 outColor;
 in vec4 colorPosition;
 in vec3 normal;
 in vec2 textureCoords;
+in float textureScale;
 
 struct DirectionalLight
 {
@@ -35,11 +36,14 @@ vec4 getLightColor() {
 }
 
 void main() {
+    vec2 scaledTextureCoord = textureCoords * textureScale;
+
+
     // Decide which shaderMode to use - render textures, xyz location, normals.. etc.
     switch(shaderMode) {
         // default
         case 0:
-            outColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+            outColor = texture(basicTexture, scaledTextureCoord) * getLightColor();
             break;
         // position
         case 1:
@@ -53,8 +57,13 @@ void main() {
         case 3:
             outColor = vec4(0.6,0.6,0.6,1.0) * (getLightColor());
             break;
+        // texture only
         case 4:
-            outColor = texture(basicTexture, textureCoords);
-        break;
+            outColor = texture(basicTexture, scaledTextureCoord);
+            break;
+        // texture coordinates
+        case 5:
+            outColor = vec4(textureCoords, 1.0f, 1.0f);
+            break;
     }
 }

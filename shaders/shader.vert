@@ -13,6 +13,7 @@ uniform int meshID;
 
 out vec3 normal;
 out vec2 textureCoords;
+out float textureScale;
 
 const float deltaDif = 0.0001f;
 
@@ -22,6 +23,8 @@ vec3 bendFunction(vec2 coords) {
     float x = coords.x;
     float y = coords.y;
     float z = 0.5f * cos(sqrt(waveFloat * coords.x * coords.x + 20 * coords.y * coords.y));
+
+    textureScale = 1.8f;
     return vec3(x, y, z);
 }
 
@@ -31,6 +34,8 @@ vec3 bendFunction2(vec2 coords) {
     float x = coords.x;
     float y = coords.y;
     float z = sin(0.8f * coords.x * coords.x + 0.25 * coords.y - 2.5f);
+
+    textureScale = 1.8f;
     return vec3(x, y, z);
 }
 
@@ -48,6 +53,7 @@ vec3 objSpehrical1(vec2 position) {
     // z = rad * cos(zenith)
     float z = rad * cos(zen);
 
+    textureScale = 4.0f;
     return vec3(x, y, z);
 }
 
@@ -68,6 +74,7 @@ vec3 sphereShape(vec2 position) {
     // z = rad * cos(zenith)
     float z = rad * cos(zen);
 
+    textureScale = 4.0f;
     return vec3(x, y, z);
 }
 
@@ -82,6 +89,7 @@ vec3 cylindrical1(vec2 position) {
     float y = r * sin(azimut);
     float z = v;
 
+    textureScale = 8.0f;
     return vec3(x, y, z);
 }
 
@@ -97,6 +105,7 @@ vec3 cylindrical2(vec2 position) {
     float y = r * sin(azimuth);
     float z = v;
 
+    textureScale = 4.0f;
     return vec3(x, y, z);
 
 }
@@ -138,5 +147,6 @@ void main() {
     // Color xyz position
     colorPosition = model * position;
     gl_Position = projection * view * model * position;
+
 }
 
