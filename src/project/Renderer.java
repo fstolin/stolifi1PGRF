@@ -2,6 +2,7 @@ package project;
 
 
 import lwjglutils.OGLTextRenderer;
+import lwjglutils.OGLTexture2D;
 import lwjglutils.OGLUtils;
 import lwjglutils.ShaderUtils;
 import org.lwjgl.BufferUtils;
@@ -10,6 +11,7 @@ import transforms.Camera;
 import transforms.Mat4OrthoRH;
 import transforms.Mat4PerspRH;
 import transforms.Vec3D;
+import java.io.IOException;
 
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ public class Renderer extends AbstractRenderer{
     private ArrayList<Mesh> meshList;
     private Mesh activeMesh;
     private int meshIDLocation;
+    private OGLTexture2D basicTexture;
 
     // Is called once
     @Override
@@ -79,6 +82,16 @@ public class Renderer extends AbstractRenderer{
         glEnable(GL_DEPTH_TEST);
 
         textRenderer = new OGLTextRenderer(width, height);
+
+        try {
+            basicTexture = new OGLTexture2D("Textures/bricks.jpg");
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         shaderProgramMain = ShaderUtils.loadProgram("/shader");
 
@@ -137,6 +150,7 @@ public class Renderer extends AbstractRenderer{
         glClearColor(0.15f,0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        bindTextures();
         handleRenderUniforms();
         directionalLight.useLight();
         drawMeshes();
@@ -151,6 +165,10 @@ public class Renderer extends AbstractRenderer{
             glUniform1i(meshIDLocation, i);
             theMesh.draw();
         }
+    }
+
+    private void bindTextures() {
+        basicTexture.bind(shaderProgramMain, "basicTexture", 0);
     }
 
     // Handles the uniform variables required in Renderer class
@@ -291,7 +309,7 @@ public class Renderer extends AbstractRenderer{
 
     // Switches the shaderMode - rendering textures, xyz, normals, lighting etc.
     private void switchShaderMode(){
-        int shaderModesCount = 3;
+        int shaderModesCount = 4;
         if (shaderMode >= shaderModesCount) {
             shaderMode = 0;
         } else {

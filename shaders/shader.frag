@@ -4,6 +4,7 @@ out vec4 outColor;
 
 in vec4 colorPosition;
 in vec3 normal;
+in vec2 textureCoords;
 
 struct DirectionalLight
 {
@@ -15,6 +16,8 @@ struct DirectionalLight
 
 uniform DirectionalLight directionalLight;
 uniform int shaderMode;
+
+uniform sampler2D basicTexture;
 
 vec4 getLightColor() {
     // ### AMBIENT ###
@@ -50,5 +53,8 @@ void main() {
         case 3:
             outColor = vec4(0.6,0.6,0.6,1.0) * (getLightColor());
             break;
+        case 4:
+            outColor = texture(basicTexture, textureCoords);
+        break;
     }
 }

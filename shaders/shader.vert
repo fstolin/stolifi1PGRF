@@ -12,6 +12,7 @@ uniform int shaderMode;
 uniform int meshID;
 
 out vec3 normal;
+out vec2 textureCoords;
 
 const float deltaDif = 0.0001f;
 
@@ -132,6 +133,7 @@ void main() {
     vec4 position = vec4(getPositionById(inPosition), 1.0f);
     // Normal transformation
     normal = transpose(inverse(mat3(model))) * getNormal(inPosition.xy);
+    textureCoords = inPosition.xy;
 
     // Color xyz position
     colorPosition = model * position;
