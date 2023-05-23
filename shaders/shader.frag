@@ -2,6 +2,10 @@
 
 out vec4 outColor;
 
+// near far / frustum of our camera
+const float near = 0.1f;
+const float far = 20.0f;
+
 in vec4 colorPosition;
 in vec3 normal;
 in vec2 textureCoords;
@@ -19,6 +23,11 @@ uniform DirectionalLight directionalLight;
 uniform int shaderMode;
 
 uniform sampler2D basicTexture;
+
+// Linearizes the depth value from the depth buffer
+float linearizeDepth(float depth){
+    return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
+}
 
 vec4 getLightColor() {
     // ### AMBIENT ###
@@ -41,29 +50,37 @@ void main() {
 
     // Decide which shaderMode to use - render textures, xyz location, normals.. etc.
     switch(shaderMode) {
-        // default
+        // default - complete lighting + texture
         case 0:
             outColor = texture(basicTexture, scaledTextureCoord) * getLightColor();
             break;
-        // position
+        // distance from light
         case 1:
+            outColor = (vec4(1.0f));
+            break;
+        // xyz position
+        case 2:
             outColor = vec4(colorPosition.xyz, 1.0);
             break;
+        // depth information
+        case 3:
+            outColor = vec4(vec3(linearizeDepth(gl_FragCoord.z) / far), 1.0f);
+            break;
         // normals
-        case 2:
+        case 4:
             outColor = vec4(normal, 1.0);
             break;
-        // lighting
-        case 3:
-            outColor = vec4(0.6,0.6,0.6,1.0) * (getLightColor());
-            break;
         // texture only
-        case 4:
+        case 5:
             outColor = texture(basicTexture, scaledTextureCoord);
             break;
         // texture coordinates
-        case 5:
+        case 6:
             outColor = vec4(textureCoords, 1.0f, 1.0f);
+            break;
+        // lighting only
+        case 7:
+            outColor = vec4(0.6,0.6,0.6,1.0) * (getLightColor());
             break;
     }
 }
