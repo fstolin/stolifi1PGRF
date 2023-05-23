@@ -88,16 +88,11 @@ public class Renderer extends AbstractRenderer{
         meshIDLocation = glGetUniformLocation(shaderProgramMain, "meshID");
 
         // ### INITIALIZE OBJECTS ###
-        meshList.add(new WaveObject(shaderProgramMain, 0.0, 0.0, 0.0));
-        activeMesh = meshList.get(0);
-        WaveObject obj = new WaveObject(shaderProgramMain, -1.0,0.0,0.0);
-        meshList.add(obj);
-        Mesh mesh3 = new Mesh(shaderProgramMain, 0.f, 2.f, 0.f);
-        meshList.add((mesh3));
+        initializeObjects();
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
-        directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.15f,
-                                            3.f, 3.0f, 0.f, 0.64f,
+        directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.07f,
+                                            0.f, 0.0f, 5.f, 0.54f,
                                             shaderProgramMain);
 
         // ### CAMERA ###
@@ -116,6 +111,17 @@ public class Renderer extends AbstractRenderer{
 
         orthoProjection = new Mat4OrthoRH(10.0,7.5, 0.1, 100.0);
 
+    }
+
+    private void initializeObjects(){
+        meshList.add(new WaveObject(shaderProgramMain, 0.0, 0.0, 0.0));
+        activeMesh = meshList.get(0);
+        WaveObject obj = new WaveObject(shaderProgramMain, -1.0,0.0,0.0);
+        meshList.add(obj);
+        Mesh mesh3 = new Mesh(shaderProgramMain, 0.f, 2.f, 0.f);
+        meshList.add((mesh3));
+        Mesh mesh4 = new Mesh(shaderProgramMain, 0.f,8.f, 0.0f);
+        meshList.add(mesh4);
     }
 
     // Called each frame
