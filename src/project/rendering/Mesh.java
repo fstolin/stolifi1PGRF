@@ -2,6 +2,7 @@ package project.rendering;
 
 import lwjglutils.OGLBuffers;
 import project.lights.PointLight;
+import project.lights.SpotLight;
 import transforms.*;
 
 import java.awt.*;
@@ -29,6 +30,7 @@ public class Mesh {
     protected int triangleMode;
     protected Material material;
     protected PointLight pointLight;
+    protected SpotLight spotLight;
 
 
     public Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
@@ -86,6 +88,7 @@ public class Mesh {
     public void translate(double x, double y, double z) {
         position = position.add(new Vec3D(x, y, z));
         if (pointLight != null) pointLight.translate(x, y, z);
+        if (spotLight != null) spotLight.translate(x, y , z);
     }
 
     // Scale the mesh
@@ -137,6 +140,14 @@ public class Mesh {
 
     public void setPointLight(PointLight pl){
         pointLight = pl;
+    }
+
+    public SpotLight getSpotLight(){
+        return spotLight;
+    }
+
+    public void setSpotLight(SpotLight sl){
+        spotLight = sl;
     }
 
 }

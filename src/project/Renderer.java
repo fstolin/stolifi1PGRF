@@ -116,16 +116,16 @@ public class Renderer extends AbstractRenderer{
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new DirectionalLight( 1.f, 0.9f, 0.8f, 0.07f,
-                                            0.f, 0.0f, 5.f, 0.24f,
+                                            3.f, 3.0f, 5.f, 0.24f,
                                             shaderProgramMain);
 
         // ### POINT LIGHT ###
         pointLight = new PointLight(1.0f,0.49f,0.31f, 0.64f, 0.84f, shaderProgramMain,
                                     4.0f, 0.0f, 2.0f, 0.3f, 0.2f, 0.1f);
         // ### SPOT LIGHT ###
-        spotLight = new SpotLight(0.99f, 0.93f, 0.69f, 0.64f, 0.84f, shaderProgramMain,
-                                    -0.0f, 0.0f, 3.0f, -0.0f,0.0f,3.0f,
-                                    0.3f, 0.2f, 0.1f, 360.0f);
+        spotLight = new SpotLight(0.89f, 0.73f, 0.69f, 0.59f, 0.92f, shaderProgramMain,
+                                    -5.7f, -0.4f, 3.9f, -0.6f,0.6f,0.5f,
+                                    0.3f, 0.2f, 0.1f, 20.0f);
 
         // ### INITIALIZE OBJECTS ###
         initializeMaterials();
@@ -313,6 +313,7 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_0]) {
             activeMesh.resetTransforms();
             if (pointLightActive) pointLight.resetTransforms();
+            if (spotLightActive) spotLight.resetTransforms();
         }
 
         // TRANSFORMING the current mesh
@@ -388,6 +389,33 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_3]) {
             if (!spotLightActive && !pointLightActive) activeMesh.rotate(-0.025f * transformSpeed);
         }
+
+        // Spotlight rotation
+        if (pressedKeys[GLFW_KEY_LEFT_BRACKET]) {
+            spotLight.rotateX(transformActualSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_RIGHT_BRACKET]) {
+            spotLight.rotateX(-transformActualSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_MINUS]) {
+            spotLight.rotateY(transformActualSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_APOSTROPHE]) {
+            spotLight.rotateY(-transformActualSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_MINUS]) {
+            spotLight.rotateY(transformActualSpeed);
+        }
+        if (pressedKeys[61]) {
+            spotLight.rotateY(-transformActualSpeed);
+        }
+        if (pressedKeys[92]) {
+            spotLight.rotateZ(transformActualSpeed);
+        }
+        if (pressedKeys[39]) {
+            spotLight.rotateZ(-transformActualSpeed);
+        }
+
 
     }
 
@@ -534,19 +562,35 @@ public class Renderer extends AbstractRenderer{
                 if (pointLightActive) return;
                 if (activeMesh.getPointLight() == null) {
                     activeMesh.setPointLight(pointLight);
-                    System.out.println("Attaching pointlight");
                 } else {
                     activeMesh.setPointLight(null);
                 }
             }
+
+            // Attach spotlight to active object
+            if (key == GLFW_KEY_V && action == GLFW_PRESS) {
+                if (spotLightActive) return;
+                if (activeMesh.getSpotLight() == null) {
+                    activeMesh.setSpotLight(spotLight);
+                } else {
+                    activeMesh.setSpotLight(null);
+                }
+            }
+
             // Attach point light to camera
             if (key == GLFW_KEY_C && action == GLFW_PRESS) {
                 pointLight.setIsAttachedToCamera(!pointLight.getIsAttachedToCamera());
             }
 
+            // Attach spotlight to camera
+            if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+                spotLight.setIsAttachedToCamera(!spotLight.getIsAttachedToCamera());
+            }
+
 
             // SMOOTH MOVEMENT & TRANSFORMATIONS -> save to pressedKey Array
             if (action == GLFW_RELEASE){
+                System.out.println("Key release " + key);
                 pressedKeys[key] = false;
             }
             if (action == GLFW_PRESS){

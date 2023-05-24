@@ -14,6 +14,7 @@ public class SpotLight extends PointLight{
     protected float edge, procEdge;
     protected Vec3D direction;
     protected int directionLocation, edgeLocation;
+    private Mat4RotXYZ rotatMatrix;
 
     public SpotLight(float red, float green, float blue,
                      float aIntensity, float dIntensity, int shaderProgramLoc,
@@ -44,8 +45,6 @@ public class SpotLight extends PointLight{
 
     public void useLight(Camera camera){
         procEdge = (float) Math.cos(Math.toRadians(edge));
-        System.out.println(procEdge);
-        System.out.println(edge);
 
         if (!enabled) {
             color = new Vec3D(0f, 0f, 0f);
@@ -57,15 +56,18 @@ public class SpotLight extends PointLight{
         glUniform1f(ambientIntensityLocation, ambientIntensity);
         glUniform1f(diffuseIntensityLocation, diffuseIntensity);
 
-        glUniform3f(directionLocation, (float) direction.getX(), (float) direction.getY(), (float) direction.getZ());
+
         glUniform1f(edgeLocation, procEdge);
 
         // If attached to camera -> set to Cameras position
         if (isAttachedToCamera) {
             glUniform3fv(positionLocation, ToFloatArray.convert(camera.getEye()));
+            glUniform3fv(directionLocation, ToFloatArray.convert(camera.getViewVector().opposite()));
         } else {
+            glUniform3f(directionLocation, (float) direction.getX(), (float) direction.getY(), (float) direction.getZ());
             glUniform3f(positionLocation, (float) position.getX(), (float) position.getY(), (float) position.getZ());
         }
+
         glUniform1f(constantLocation, constant);
         glUniform1f(linearLocation, linear);
         glUniform1f(exponentLocation, exponent);
@@ -75,15 +77,31 @@ public class SpotLight extends PointLight{
         Mat4 model = new Mat4Identity();
 
         translMatrix = new Mat4Transl(position);
+        rotatMatrix = new Mat4RotXYZ(direction.getX(), direction.getY(), direction.getZ());
 
         // translate
         model = model.mul(translMatrix);
+        // rotate
+        model = model.mul(rotatMatrix);
+
         glUniformMatrix4fv(positionLocation, false, model.floatArray());
     }
 
     public void translate(double x, double y, double z) {
         position = position.add(new Vec3D(x, y, z));
         if (lightMesh != null) lightMesh.translate(x, y, z);
+    }
+
+    public void rotateX(double x) {
+        direction = direction.add(new Vec3D(x, 0.f, 0.0f));
+    }
+
+    public void rotateY(double y) {
+        direction = direction.add(new Vec3D(0.0f, y, 0.0f));
+    }
+
+    public void rotateZ(double z) {
+        direction = direction.add(new Vec3D(0.0f, 0.0f, z));
     }
 
     public Vec3D getPosition(){
@@ -108,6 +126,9 @@ public class SpotLight extends PointLight{
 
     public void resetTransforms(){
         position = defaultPosition;
+        if (lightMesh != null) {
+            lightMesh.resetTransforms();
+        }
     }
 
     public void toggleEnabled() {

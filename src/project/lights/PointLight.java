@@ -64,6 +64,7 @@ public class PointLight extends Light{
         } else {
             glUniform3f(positionLocation, (float) position.getX(), (float) position.getY(), (float) position.getZ());
         }
+
         glUniform1f(constantLocation, constant);
         glUniform1f(linearLocation, linear);
         glUniform1f(exponentLocation, exponent);
