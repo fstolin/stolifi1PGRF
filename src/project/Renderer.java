@@ -60,6 +60,7 @@ public class Renderer extends AbstractRenderer{
     private boolean directionalLightActive;
     private int meshIDLocation;
     private OGLTexture2D basicTexture;
+    private OGLTexture2D normTexture;
     private int eyePositionLocation;
 
     private Material shinyMaterial;
@@ -97,6 +98,7 @@ public class Renderer extends AbstractRenderer{
         textRenderer = new OGLTextRenderer(width, height);
 
         try {
+            normTexture = new OGLTexture2D("Textures/bricksn.png");
             basicTexture = new OGLTexture2D("Textures/bricks.jpg");
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -115,8 +117,8 @@ public class Renderer extends AbstractRenderer{
         eyePositionLocation = glGetUniformLocation(shaderProgramMain, "eyePosition");
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
-        directionalLight = new DirectionalLight( 1.f, 0.9f, 0.8f, 0.07f,
-                                            3.f, 3.0f, 5.f, 0.24f,
+        directionalLight = new DirectionalLight( 1.f, 0.9f, 0.8f, 0.02f,
+                                            3.f, 3.0f, 5.f, 0.05f,
                                             shaderProgramMain);
 
         // ### POINT LIGHT ###
@@ -218,6 +220,7 @@ public class Renderer extends AbstractRenderer{
 
     private void bindTextures() {
         basicTexture.bind(shaderProgramMain, "basicTexture", 0);
+        normTexture.bind(shaderProgramMain, "normTexture", 1);
     }
 
     // Handles the uniform variables required in Renderer class

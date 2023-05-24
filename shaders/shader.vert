@@ -2,7 +2,9 @@
 #define PI 3.1415926538
 
 in vec2 inPosition;
-out vec4 colorPosition;
+in vec3 aNormal;
+in vec3 aTangent;
+in vec3 aBitangent;
 
 uniform float waveFloat;
 uniform mat4 view;
@@ -15,6 +17,11 @@ out vec3 normal;
 out vec3 fragPos;
 out vec2 textureCoords;
 out float textureScale;
+out vec4 colorPosition;
+
+out vec3 eyeVector;
+out vec3 lightVector;
+out vec3 spotLightVector;
 
 const float deltaDif = 0.0001f;
 
@@ -147,6 +154,22 @@ vec3 getNormal(vec2 xyPosition) {
     return normalize(cross(deltaX, deltaY));
 }
 
+mat3 TBNmat(vec2 xyPosition) {
+    vec2 dx = vec2(deltaDif, 0);
+    vec2 dy = vec2(0, deltaDif);
+
+    vec3 deltaX = getPositionById(xyPosition + dx) - getPositionById(xyPosition - dx);
+    vec3 deltaY = getPositionById(xyPosition + dy) - getPositionById(xyPosition - dy);
+
+    vec3 T = normalize(deltaX);
+    vec3 B = normalize(-deltaY);
+    vec3 N = normalize(cross(T, B));
+
+    T = cross(B, N);
+
+    return mat3(T, B, N);
+}
+
 void main() {
     vec4 position = vec4(getPositionById(inPosition), 1.0f);
     // Normal transformation
@@ -156,6 +179,10 @@ void main() {
     // Color xyz position
     colorPosition = model * position;
     gl_Position = projection * view * model * position;
+
+    //TBN
+    //mat3 TBN = TBNmat(inPosition);
+
 
     // Fragment position for light
     fragPos = (model * position).xyz;

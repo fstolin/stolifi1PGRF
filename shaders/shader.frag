@@ -8,6 +8,7 @@ const float far = 20.0f;
 
 vec3 fragToEye;
 float distanceFromLight;
+float attenuation;
 
 in vec4 colorPosition;
 in vec3 normal;
@@ -61,6 +62,7 @@ uniform int meshID;
 uniform vec3 eyePosition;
 
 uniform sampler2D basicTexture;
+uniform sampler2D normTexture;
 
 // Linearizes the depth value from the depth buffer
 float linearizeDepth(float depth){
@@ -115,10 +117,10 @@ vec4 calcPointLight(PointLight pLight) {
 
     vec4 plColor = calcLightByDirection(pLight.base, direction);
     // attenuation
-    float attenuation = pLight.exponent * distanceFromLight * distanceFromLight + pLight.linear * distanceFromLight + pLight.constant;
+    attenuation = 1.0 / (pLight.exponent * distanceFromLight * distanceFromLight + pLight.linear * distanceFromLight + pLight.constant);
     // color = plColor / attenuation
     if (attenuation != 0) {
-        return plColor / attenuation;
+        return plColor * attenuation;
     } else {
         return plColor;
     }
@@ -133,19 +135,25 @@ vec4 calcSpotLight(SpotLight sLight){
     if(spotLightFactor > spotLight.edge){
         // Calculate the point light part of spotlight
         vec4 color = calcPointLight(sLight.base);
+        // 0 - 1 scale for spotLightFactor (from spotLight.edge to 1)
+        float scaleRatio = ((1.0f - 0.0f) / (1.0f - spotLight.edge));
+        float transform = 1.0f - (1.0f - spotLightFactor) * scaleRatio;
+        color = color * transform;
         return color;
     } else {
         return vec4(0.0f, 0.0f, 0.0f, 0.0f);
     }
 }
 
-float calculateDistance() {
-    return length(pointLight.position - fragPos);
+// calculates distance from pointlight
+float calculateDistance(PointLight pl) {
+    return length(pl.position - fragPos);
 }
 
 // Returns the final color of light - to multiply the texture.
 vec4 getFinalLightColor(){
-    return calcDirectionalLight() + calcPointLight(pointLight) + calcSpotLight(spotLight);
+    return (calcDirectionalLight() + calcPointLight(pointLight) + calcSpotLight(spotLight));
+    //return (calcDirectionalLight() + calcPointLight(pointLight) + calcSpotLight(spotLight)) * attenuation;
 }
 
 void main() {
@@ -168,7 +176,7 @@ void main() {
         // distance from light
         case 1:
             float maxDistance = 10.f;
-            float normalizedDistance = 1 - calculateDistance() / maxDistance;
+            float normalizedDistance = 1 - calculateDistance(pointLight) / maxDistance;
             outColor = vec4(vec3(normalizedDistance), 1.0f);
             break;
         // xyz position
