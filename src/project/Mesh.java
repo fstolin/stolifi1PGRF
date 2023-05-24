@@ -97,6 +97,10 @@ public class Mesh {
         rotation += a;
     }
 
+    public void setScale(double xyz){
+        this.scale = new Vec3D(xyz, xyz, xyz);
+    }
+
     // Enables drawing
     public void enable(){
         enabled = true;

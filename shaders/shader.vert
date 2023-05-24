@@ -82,7 +82,7 @@ vec3 sphereShape(vec2 position) {
 // Cylindrical #1 - basic Sombrero
 vec3 cylindrical1(vec2 position) {
 
-    float r = position.x * 1.0f * PI;
+    float r = position.x * 2.0f * PI;
     float azimut = position.y * 2.f * PI;
     float v = 2.f * sin(r);
 

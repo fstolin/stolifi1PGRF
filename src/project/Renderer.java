@@ -143,7 +143,8 @@ public class Renderer extends AbstractRenderer{
         Mesh mesh4 = new Mesh(shaderProgramMain, -0.0f,-3.0f, 0.0f, "SphericalObejct2");
         meshList.add(mesh4);
         mesh4.setMaterial(dullMaterial);
-        Mesh mesh5 = new Mesh(shaderProgramMain, 3.0f, -10.0f, 0.0f, "ShakeyCylinder");
+        Mesh mesh5 = new Mesh(shaderProgramMain, 3.0f, -20.0f, 0.0f, "ShakeyCylinder");
+        mesh5.setScale(0.35f);
         meshList.add(mesh5);
         mesh5.setMaterial(shinyMaterial);
         Mesh mesh6 = new Mesh(shaderProgramMain, -5.0f, -10.0f, 0.0f, "cylinder");

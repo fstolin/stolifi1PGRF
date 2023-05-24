@@ -52,17 +52,16 @@ vec4 getLightColor() {
     float diffuseFactor = max(dot(normalize(normal), normalize(directionalLight.direction)), 0.f);
     vec4 diffuseColor = vec4(directionalLight.color, 1.0f) * directionalLight.diffuseIntensity * diffuseFactor;
     // ### SPECULAR COLOR ###
+    // Specular color
     vec4 specularColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
     // If the object isn't hit with diffuse lighting, it won't be with specular
     if (diffuseFactor > 0.0f)
     {
         // Eye vector
-        vec3 viewDir = normalize(eyePosition - fragPos);
-        // Half vector
-        vec3 halfVector = normalize(normalize(directionalLight.direction) + viewDir);
+        vec3 fragToEye = normalize(fragPos - eyePosition);
         // Light ray reflection around the normal - 1st argument what to reflect, 2nd around what
         vec3 reflectedVertex = normalize(reflect(directionalLight.direction, normalize(normal)));
-        float specularFactor = dot(normal, halfVector);
+        float specularFactor =dot(fragToEye, reflectedVertex);
         // check for shininess
         if (specularFactor > 0.0f)
         {
