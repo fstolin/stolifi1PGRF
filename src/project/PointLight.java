@@ -72,6 +72,7 @@ public class PointLight extends Light{
 
     public void translate(double x, double y, double z) {
         position = position.add(new Vec3D(x, y, z));
+        if (lightMesh != null) lightMesh.translate(x, y, z);
     }
 
     public Vec3D getPosition(){

@@ -25,6 +25,7 @@ public class Mesh {
     protected double defaultRot;
     protected int triangleMode;
     protected Material material;
+    protected PointLight pointLight;
 
 
     Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
@@ -81,6 +82,7 @@ public class Mesh {
     // Translate the mesh
     public void translate(double x, double y, double z) {
         position = position.add(new Vec3D(x, y, z));
+        if (pointLight != null) pointLight.translate(x, y, z);
     }
 
     // Scale the mesh
@@ -126,4 +128,11 @@ public class Mesh {
         rotation = defaultRot;
     }
 
+    public PointLight getPointLight(){
+        return pointLight;
+    }
+
+    public void setPointLight(PointLight pl){
+        pointLight = pl;
+    }
 }

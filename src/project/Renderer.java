@@ -53,7 +53,9 @@ public class Renderer extends AbstractRenderer{
     private ArrayList<Mesh> meshList;
     private Mesh activeMesh;
     private boolean pointLightActive;
+    private boolean pointLightOverride;
     private boolean spotLightActive;
+    private boolean spotLightOverride;
     private boolean directionalLightActive;
     private int meshIDLocation;
     private OGLTexture2D basicTexture;
@@ -307,31 +309,49 @@ public class Renderer extends AbstractRenderer{
         }
         // Up & Down
         if (pressedKeys[GLFW_KEY_KP_SUBTRACT]) {
-            activeMesh.translate(0.0, 0.0, transformActualSpeed);
-            if (pointLightActive) pointLight.translate(0.0, 0.0, transformActualSpeed);
+            if (pointLightActive) {
+                pointLight.translate(0.0, 0.0, transformActualSpeed);
+            } else {
+                activeMesh.translate(0.0, 0.0, transformActualSpeed);
+            }
         }
         if (pressedKeys[GLFW_KEY_KP_ADD]) {
-            activeMesh.translate(0.0, 0.0, -transformActualSpeed);
-            if (pointLightActive) pointLight.translate(0.0, 0.0, -transformActualSpeed);
+            if (pointLightActive) {
+                pointLight.translate(0.0, 0.0, -transformActualSpeed);
+            } else {
+                activeMesh.translate(0.0, 0.0, -transformActualSpeed);
+            }
         }
         // Left & Right
         if (pressedKeys[GLFW_KEY_KP_4]) {
-            activeMesh.translate(transformActualSpeed, 0.0, 0.0);
-            if(pointLightActive) pointLight.translate(transformActualSpeed, 0.0, 0.0);
+            if(pointLightActive) {
+                pointLight.translate(transformActualSpeed, 0.0, 0.0);
+            } else {
+                activeMesh.translate(transformActualSpeed, 0.0, 0.0);
+            }
         }
         if (pressedKeys[GLFW_KEY_KP_6]) {
-            activeMesh.translate(-transformActualSpeed, 0.0, 0.0);
-            if(pointLightActive) pointLight.translate(-transformActualSpeed, 0.0, 0.0);
+            if(pointLightActive) {
+                pointLight.translate(-transformActualSpeed, 0.0, 0.0);
+            } else {
+                activeMesh.translate(-transformActualSpeed, 0.0, 0.0);
+            }
         }
 
         // Back & Forward
         if (pressedKeys[GLFW_KEY_KP_8]) {
-            activeMesh.translate(0.0, transformActualSpeed, 0.0);
-            if (pointLightActive) pointLight.translate(0.0, transformActualSpeed, 0.0);
+            if (pointLightActive) {
+                pointLight.translate(0.0, transformActualSpeed, 0.0);
+            } else {
+                activeMesh.translate(0.0, transformActualSpeed, 0.0);
+            }
         }
         if (pressedKeys[GLFW_KEY_KP_5]) {
-            activeMesh.translate(0.0, -transformActualSpeed, 0.0);
-            if (pointLightActive) pointLight.translate(0.0, -transformActualSpeed, 0.0);
+            if (pointLightActive) {
+                pointLight.translate(0.0, -transformActualSpeed, 0.0);
+            } else {
+                activeMesh.translate(0.0, -transformActualSpeed, 0.0);
+            }
         }
         // Rotation
         if (pressedKeys[GLFW_KEY_KP_1]) {
@@ -481,6 +501,15 @@ public class Renderer extends AbstractRenderer{
             }
             if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
                 if (pointLightActive) pointLight.toggleEnabled();
+            }
+            if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+                if (pointLightActive) return;
+                if (activeMesh.pointLight == null) {
+                    activeMesh.setPointLight(pointLight);
+                    System.out.println("Attaching pointlight");
+                } else {
+                    activeMesh.setPointLight(null);
+                }
             }
 
 
