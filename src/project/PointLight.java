@@ -1,6 +1,7 @@
 package project;
 
 import lwjglutils.OGLBuffers;
+import lwjglutils.ToFloatArray;
 import transforms.*;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -15,6 +16,7 @@ public class PointLight extends Light{
     private int positionLocation, constantLocation, linearLocation, exponentLocation;
     private OGLBuffers oglBuffers;
     private Mat4Transl translMatrix;
+    private boolean isAttachedToCamera;
     private Mesh lightMesh;
 
     PointLight(float red, float green, float blue,
@@ -30,7 +32,7 @@ public class PointLight extends Light{
         linear = lin;
         exponent = exp;
 
-
+        isAttachedToCamera = false;
         enabled = true;
 
         positionLocation = glGetUniformLocation(shaderProgram, "pointLight.position");
@@ -43,7 +45,7 @@ public class PointLight extends Light{
         diffuseIntensityLocation = glGetUniformLocation(shaderProgram, "pointLight.base.diffuseIntensity");
     }
 
-    public void useLight(){
+    public void useLight(Camera camera){
         if (!enabled) {
             color = new Vec3D(0f, 0f, 0f);
         } else {
@@ -54,7 +56,12 @@ public class PointLight extends Light{
         glUniform1f(ambientIntensityLocation, ambientIntensity);
         glUniform1f(diffuseIntensityLocation, diffuseIntensity);
 
-        glUniform3f(positionLocation, (float) position.getX(), (float) position.getY(), (float) position.getZ());
+        // If attached to camera -> set to Cameras position
+        if (isAttachedToCamera) {
+            glUniform3fv(positionLocation, ToFloatArray.convert(camera.getEye()));
+        } else {
+            glUniform3f(positionLocation, (float) position.getX(), (float) position.getY(), (float) position.getZ());
+        }
         glUniform1f(constantLocation, constant);
         glUniform1f(linearLocation, linear);
         glUniform1f(exponentLocation, exponent);
@@ -85,6 +92,14 @@ public class PointLight extends Light{
 
     public Mesh getLightMesh(){
         return lightMesh;
+    }
+
+    public void setIsAttachedToCamera(boolean b) {
+        isAttachedToCamera = b;
+    }
+
+    public boolean getIsAttachedToCamera() {
+        return isAttachedToCamera;
     }
 
     public void resetTransforms(){

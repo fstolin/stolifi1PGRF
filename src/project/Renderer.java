@@ -195,7 +195,7 @@ public class Renderer extends AbstractRenderer{
 
     private void handleLights() {
         directionalLight.useLight();
-        pointLight.useLight();
+        pointLight.useLight(camera);
     }
 
     // Draws all meshes from the mesh list
@@ -509,6 +509,13 @@ public class Renderer extends AbstractRenderer{
                     System.out.println("Attaching pointlight");
                 } else {
                     activeMesh.setPointLight(null);
+                }
+            }
+            if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+                if (pointLight.getIsAttachedToCamera()){
+                    pointLight.setIsAttachedToCamera(false);
+                } else {
+                    pointLight.setIsAttachedToCamera(true);
                 }
             }
 
