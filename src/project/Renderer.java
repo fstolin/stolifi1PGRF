@@ -593,7 +593,6 @@ public class Renderer extends AbstractRenderer{
 
             // SMOOTH MOVEMENT & TRANSFORMATIONS -> save to pressedKey Array
             if (action == GLFW_RELEASE){
-                System.out.println("Key release " + key);
                 pressedKeys[key] = false;
             }
             if (action == GLFW_PRESS){
