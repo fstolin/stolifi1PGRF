@@ -1,10 +1,7 @@
 package project;
 
 
-import lwjglutils.OGLTextRenderer;
-import lwjglutils.OGLTexture2D;
-import lwjglutils.OGLUtils;
-import lwjglutils.ShaderUtils;
+import lwjglutils.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import transforms.Camera;
@@ -15,6 +12,7 @@ import java.io.IOException;
 
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -52,6 +50,10 @@ public class Renderer extends AbstractRenderer{
     private Mesh activeMesh;
     private int meshIDLocation;
     private OGLTexture2D basicTexture;
+    private int eyePositionLocation;
+
+    private Material shinyMaterial;
+    private Material dullMaterial;
 
     // Is called once
     @Override
@@ -67,7 +69,7 @@ public class Renderer extends AbstractRenderer{
         // Key array
         pressedKeys = new boolean[1024];
         // Camera movement speeds
-        camMovementSpeed = 1.5f;
+        camMovementSpeed = 2.5f;
         camBoostSpeedValue = 2.5f;
         camBoostSpeedMultiplier = 1f;
         // Transform speeds
@@ -99,13 +101,15 @@ public class Renderer extends AbstractRenderer{
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
         shaderModeLocation = glGetUniformLocation(shaderProgramMain, "shaderMode");
         meshIDLocation = glGetUniformLocation(shaderProgramMain, "meshID");
+        eyePositionLocation = glGetUniformLocation(shaderProgramMain, "eyePosition");
 
         // ### INITIALIZE OBJECTS ###
+        initializeMaterials();
         initializeObjects();
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.07f,
-                                            3.f, 3.0f, 5.f, 0.54f,
+                                            0.f, 0.0f, 5.f, 0.24f,
                                             shaderProgramMain);
 
         // ### CAMERA ###
@@ -129,16 +133,31 @@ public class Renderer extends AbstractRenderer{
     private void initializeObjects(){
         meshList.add(new WaveObject(shaderProgramMain, 0.0f, 0.0f, 0.0f, "waveObject1"));
         activeMesh = meshList.get(0);
+        activeMesh.setMaterial(shinyMaterial);
         WaveObject obj = new WaveObject(shaderProgramMain, -2.0f, 0.0f,1.0f, "staticObjectCart");
+        obj.setMaterial(dullMaterial);
         meshList.add(obj);
         Mesh mesh3 = new Mesh(shaderProgramMain, -2.0f, -3.0f, 0.f, "Sphere");
         meshList.add((mesh3));
+        mesh3.setMaterial(shinyMaterial);
         Mesh mesh4 = new Mesh(shaderProgramMain, -0.0f,-3.0f, 0.0f, "SphericalObejct2");
         meshList.add(mesh4);
+        mesh4.setMaterial(dullMaterial);
         Mesh mesh5 = new Mesh(shaderProgramMain, 3.0f, -10.0f, 0.0f, "ShakeyCylinder");
         meshList.add(mesh5);
+        mesh5.setMaterial(shinyMaterial);
         Mesh mesh6 = new Mesh(shaderProgramMain, -5.0f, -10.0f, 0.0f, "cylinder");
         meshList.add(mesh6);
+        mesh6.setMaterial(dullMaterial);
+        Mesh mesh7 = new Mesh(shaderProgramMain, -1.0f, -1.0f, 2.f, "plane");
+        mesh7.scale(2.0f);
+        meshList.add(mesh7);
+        mesh7.setMaterial(shinyMaterial);
+    }
+
+    private void initializeMaterials(){
+        shinyMaterial = new Material(1.0f, 32, shaderProgramMain);
+        dullMaterial = new Material(0.4f, 4, shaderProgramMain);
     }
 
     // Called each frame
@@ -173,8 +192,13 @@ public class Renderer extends AbstractRenderer{
 
     // Handles the uniform variables required in Renderer class
     private void handleRenderUniforms() {
+        // View
         glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
+        // Shader mode
         glUniform1i(shaderModeLocation, shaderMode);
+        // EyePosition
+        glUniform3fv(eyePositionLocation, ToFloatArray.convert(camera.getEye()));
+        // Projection
         if (orthoProjectionEnabled) {
             glUniformMatrix4fv(projectionLocation, false, orthoProjection.floatArray());
         } else {

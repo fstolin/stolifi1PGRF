@@ -24,6 +24,7 @@ public class Mesh {
     protected Vec3D defaultScale;
     protected double defaultRot;
     protected int triangleMode;
+    protected Material material;
 
 
     Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
@@ -40,6 +41,9 @@ public class Mesh {
         defaultScale = scale;
         this.name = name;
 
+        // Default material
+        material = new Material(0.45f, 0.45f, shaderProgram);
+
         oglBuffers = GridFactory.generateStripeGrid(80,80);
         triangleMode = GL_TRIANGLE_STRIP;
     }
@@ -49,6 +53,7 @@ public class Mesh {
 
         glUseProgram(shaderProgram);
         this.transform();
+        this.material.useMaterial();
         oglBuffers.draw(triangleMode, shaderProgram);
     }
 
@@ -67,6 +72,10 @@ public class Mesh {
         // scale
         model = model.mul(scaleMatrix);
         glUniformMatrix4fv(modelLocation, false, model.floatArray());
+    }
+
+    public void setMaterial(Material theMaterial){
+        material = theMaterial;
     }
 
     // Translate the mesh

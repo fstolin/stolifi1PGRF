@@ -12,6 +12,7 @@ uniform int shaderMode;
 uniform int meshID;
 
 out vec3 normal;
+out vec3 fragPos;
 out vec2 textureCoords;
 out float textureScale;
 
@@ -110,6 +111,12 @@ vec3 cylindrical2(vec2 position) {
 
 }
 
+// Debugging plane
+vec3 plane(vec2 position) {
+    textureScale = 1.0f;
+    return vec3(position, 0.0f);
+}
+
 // returns the Z of the adequate function
 vec3 getPositionById(vec2 position) {
     // Each case is different object & shape
@@ -120,6 +127,7 @@ vec3 getPositionById(vec2 position) {
         case 3: return objSpehrical1(position);
         case 4: return cylindrical1(position);
         case 5: return cylindrical2(position);
+        case 6: return plane(position);
     }
     // default
     return vec3(0.f, 1.f, 2.f);
@@ -148,5 +156,7 @@ void main() {
     colorPosition = model * position;
     gl_Position = projection * view * model * position;
 
+    // Fragment position for light
+    fragPos = (model * position).xyz;
 }
 
