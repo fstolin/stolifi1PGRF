@@ -1,5 +1,6 @@
 package project;
 
+import lwjglutils.OGLBuffers;
 import transforms.Vec3D;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -9,6 +10,7 @@ public class PointLight extends Light{
     private Vec3D position;
     private float constant, linear, exponent;
     private int positionLocation, constantLocation, linearLocation, exponentLocation;
+    private OGLBuffers oglBuffers;
 
     PointLight(float red, float green, float blue,
                float aIntensity, float dIntensity, int shaderProgramLoc,
@@ -29,6 +31,8 @@ public class PointLight extends Light{
         colorLocation = glGetUniformLocation(shaderProgram, "pointLight.base.color");
         ambientIntensityLocation = glGetUniformLocation(shaderProgram, "pointLight.base.ambientIntensity");
         diffuseIntensityLocation = glGetUniformLocation(shaderProgram, "pointLight.base.diffuseIntensity");
+        // prepare draw shader for light highlighting
+        prepareDrawShader();
     }
 
     public void useLight(){
@@ -40,6 +44,15 @@ public class PointLight extends Light{
         glUniform1f(constantLocation, constant);
         glUniform1f(linearLocation, linear);
         glUniform1f(exponentLocation, exponent);
+    }
+
+    public void draw(){
+        glUseProgram(drawProgram);
+        oglBuffers.draw(GL_TRIANGLES, drawProgram);
+    }
+
+    private void prepareDrawShader(){
+        oglBuffers = GridFactory.generateGrid(20,20);
     }
 
 }

@@ -7,6 +7,7 @@ const float near = 0.1f;
 const float far = 20.0f;
 
 vec3 fragToEye;
+float distanceFromLight;
 
 in vec4 colorPosition;
 in vec3 normal;
@@ -44,6 +45,8 @@ struct Material
 };
 
 uniform DirectionalLight directionalLight;
+uniform PointLight pointLight;
+
 uniform Material material;
 uniform int shaderMode;
 uniform vec3 eyePosition;
@@ -55,16 +58,17 @@ float linearizeDepth(float depth){
     return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
 }
 
-vec4 getLightColor() {
+// Calculates directional factor for lights
+vec4 calcLightByDirection(Light light, vec3 direction) {
     // ### AMBIENT ###
     // struct color * ambient intensity
-    vec4 ambientColor = vec4(directionalLight.base.color, 1.0f) * directionalLight.base.ambientIntensity;
+    vec4 ambientColor = vec4(light.color, 1.0f) * light.ambientIntensity;
     // ### DIFFUSE COLOR ###
     // calculate the diffuse factor -> cos angle normal * direction
     // A.B =´|A||B|cos(angle) -> when we normalize |A|  and |B| = 1
     // max returns the greater of 2 values
-    float diffuseFactor = max(dot(normalize(normal), normalize(directionalLight.direction)), 0.f);
-    vec4 diffuseColor = vec4(directionalLight.base.color, 1.0f) * directionalLight.base.diffuseIntensity * diffuseFactor;
+    float diffuseFactor = max(dot(normalize(normal), normalize(direction)), 0.f);
+    vec4 diffuseColor = vec4(light.color, 1.0f) * light.diffuseIntensity * diffuseFactor;
     // ### SPECULAR COLOR ###
     // Specular color
     vec4 specularColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -74,34 +78,61 @@ vec4 getLightColor() {
         // Eye vector
         vec3 fragToEye = normalize(fragPos - eyePosition);
         // Light ray reflection around the normal - 1st argument what to reflect, 2nd around what
-        vec3 reflectedVertex = normalize(reflect(directionalLight.direction, normalize(normal)));
+        vec3 reflectedVertex = normalize(reflect(direction, normalize(normal)));
         float specularFactor =dot(fragToEye, reflectedVertex);
         // check for shininess
         if (specularFactor > 0.0f)
         {
             specularFactor = pow(specularFactor, material.shininess);
-            specularColor = vec4(directionalLight.base.color, 1.0f) * material.specularIntensity * specularFactor;
+            specularColor = vec4(light.color, 1.0f) * material.specularIntensity * specularFactor;
         }
     }
-
     // Return the value
     return (ambientColor + diffuseColor + specularColor);
+}
+
+// Calculates directional light
+vec4 calcDirectionalLight() {
+    return calcLightByDirection(directionalLight.base, directionalLight.direction);
+}
+
+// Calculates the point light
+vec4 calcPointLight() {
+    // Get the direction from fragment to light
+    vec3 direction = fragPos - pointLight.position;
+    // Distance between light & fragment - calculate before normalizing
+    distanceFromLight = length(direction);
+    direction = normalize(direction);
+
+    vec4 plColor = calcLightByDirection(pointLight.base, direction);
+    // attenuation
+    float attenuation = pointLight.exponent * distanceFromLight * distanceFromLight + pointLight.linear * distanceFromLight + pointLight.constant;
+    // color = plColor / attenuation
+    if (attenuation != 0) {
+        return plColor / attenuation;
+    } else {
+        return plColor;
+    }
+}
+
+// Returns the final color of light - to multiply the texture.
+vec4 getFinalLightColor(){
+    return calcDirectionalLight() + calcPointLight();
 }
 
 void main() {
     vec2 scaledTextureCoord = textureCoords * textureScale;
 
-
     // Decide which shaderMode to use - render textures, xyz location, normals.. etc.
     switch(shaderMode) {
         // default - complete lighting + texture
         case 0:
-            outColor = texture(basicTexture, scaledTextureCoord) * getLightColor();
+            outColor = texture(basicTexture, scaledTextureCoord) * getFinalLightColor();
             break;
         // distance from light
         case 1:
-            vec4 light = getLightColor();
-            outColor = (vec4(fragPos, 1.0f));
+            //vec4 light = getLightColor();
+            outColor = (vec4(vec3(distanceFromLight), 1.0f));
             break;
         // xyz position
         case 2:
@@ -125,7 +156,7 @@ void main() {
             break;
         // lighting only
         case 7:
-            outColor = vec4(0.6,0.6,0.6,1.0) * (getLightColor());
+            outColor = vec4(0.6,0.6,0.6,1.0) * getFinalLightColor();
             break;
     }
 }

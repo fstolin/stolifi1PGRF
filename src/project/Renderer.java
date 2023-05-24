@@ -8,6 +8,8 @@ import transforms.Camera;
 import transforms.Mat4OrthoRH;
 import transforms.Mat4PerspRH;
 import transforms.Vec3D;
+
+import java.awt.*;
 import java.io.IOException;
 
 import java.nio.DoubleBuffer;
@@ -28,6 +30,7 @@ import static org.lwjgl.opengl.GL20.*;
 public class Renderer extends AbstractRenderer{
 
     private int shaderProgramMain;
+    private int lightShader;
     private int viewLocation;
     private int projectionLocation;
     private int polygonMode = 0;
@@ -38,6 +41,7 @@ public class Renderer extends AbstractRenderer{
     private float transformSpeed;
     private Camera camera;
     private DirectionalLight directionalLight;
+    private PointLight pointLight;
     private Mat4OrthoRH orthoProjection;
     private Mat4PerspRH perspProjection;
     private boolean orthoProjectionEnabled;
@@ -112,6 +116,10 @@ public class Renderer extends AbstractRenderer{
                                             0.f, 0.0f, 5.f, 0.24f,
                                             shaderProgramMain);
 
+        // ### POINT LIGHT ###
+        pointLight = new PointLight(1.0f,0.49f,0.31f, 0.44f, 0.84f, shaderProgramMain,
+                                    0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f);
+
         // ### CAMERA ###
         camera = new Camera()
                 .withPosition(new Vec3D(3,3,3))
@@ -172,8 +180,13 @@ public class Renderer extends AbstractRenderer{
 
         bindTextures();
         handleRenderUniforms();
-        directionalLight.useLight();
+        handleLights();
         drawMeshes();
+    }
+
+    private void handleLights() {
+        directionalLight.useLight();
+        pointLight.useLight();
     }
 
     // Draws all meshes from the mesh list

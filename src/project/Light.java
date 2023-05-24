@@ -1,5 +1,6 @@
 package project;
 
+import lwjglutils.ShaderUtils;
 import transforms.Vec3D;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -7,6 +8,7 @@ import static org.lwjgl.opengl.GL20.*;
 public class Light {
 
     protected int shaderProgram;
+    protected int drawProgram;
     protected Vec3D color;
 
     protected float ambientIntensity;
@@ -14,14 +16,15 @@ public class Light {
     protected final float intensityModificationSpeed;
     protected int colorLocation, ambientIntensityLocation, diffuseIntensityLocation;
 
-    Light(float red, float green, float blue, float aIntensity, float dIntensity, int shaderProgramLoc){
+    Light(float red, float green, float blue, float aIntensity, float dIntensity, int shaderProgramLoc, int drawProgramLoc){
             color = new Vec3D(red, green, blue);
             ambientIntensity = aIntensity;
             diffuseIntensity = dIntensity;
             // Speed at which modifications to intensity are set
             intensityModificationSpeed = 0.2f;
             shaderProgram = shaderProgramLoc;
-
+            // Draw shader
+            drawProgram = drawProgramLoc;
     }
 
     public void decreaseAmbientIntensity(float dimSpeed){
