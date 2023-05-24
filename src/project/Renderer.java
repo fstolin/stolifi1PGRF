@@ -37,7 +37,7 @@ public class Renderer extends AbstractRenderer{
     private float camBoostSpeedValue;
     private float transformSpeed;
     private Camera camera;
-    private Light directionalLight;
+    private DirectionalLight directionalLight;
     private Mat4OrthoRH orthoProjection;
     private Mat4PerspRH perspProjection;
     private boolean orthoProjectionEnabled;
@@ -108,7 +108,7 @@ public class Renderer extends AbstractRenderer{
         initializeObjects();
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
-        directionalLight = new Light( 1.f, 0.9f, 0.8f, 0.07f,
+        directionalLight = new DirectionalLight( 1.f, 0.9f, 0.8f, 0.07f,
                                             0.f, 0.0f, 5.f, 0.24f,
                                             shaderProgramMain);
 

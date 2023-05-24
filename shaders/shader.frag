@@ -14,13 +14,27 @@ in vec3 fragPos;
 in vec2 textureCoords;
 in float textureScale;
 
-// Directional light
-struct DirectionalLight
+// light super
+struct Light
 {
     vec3 color;
     float ambientIntensity;
-    vec3 direction;
     float diffuseIntensity;
+};
+// directional light
+struct DirectionalLight
+{
+    Light base;
+    vec3 direction;
+};
+// point light
+struct PointLight
+{
+    Light base;
+    vec3 position;
+    float constant;
+    float linear;
+    float exponent;
 };
 // Material
 struct Material
@@ -44,13 +58,13 @@ float linearizeDepth(float depth){
 vec4 getLightColor() {
     // ### AMBIENT ###
     // struct color * ambient intensity
-    vec4 ambientColor = vec4(directionalLight.color, 1.0f) * directionalLight.ambientIntensity;
+    vec4 ambientColor = vec4(directionalLight.base.color, 1.0f) * directionalLight.base.ambientIntensity;
     // ### DIFFUSE COLOR ###
     // calculate the diffuse factor -> cos angle normal * direction
     // A.B =´|A||B|cos(angle) -> when we normalize |A|  and |B| = 1
     // max returns the greater of 2 values
     float diffuseFactor = max(dot(normalize(normal), normalize(directionalLight.direction)), 0.f);
-    vec4 diffuseColor = vec4(directionalLight.color, 1.0f) * directionalLight.diffuseIntensity * diffuseFactor;
+    vec4 diffuseColor = vec4(directionalLight.base.color, 1.0f) * directionalLight.base.diffuseIntensity * diffuseFactor;
     // ### SPECULAR COLOR ###
     // Specular color
     vec4 specularColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -66,7 +80,7 @@ vec4 getLightColor() {
         if (specularFactor > 0.0f)
         {
             specularFactor = pow(specularFactor, material.shininess);
-            specularColor = vec4(directionalLight.color, 1.0f) * material.specularIntensity * specularFactor;
+            specularColor = vec4(directionalLight.base.color, 1.0f) * material.specularIntensity * specularFactor;
         }
     }
 
