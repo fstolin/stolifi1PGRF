@@ -1,4 +1,4 @@
-package project;
+package project.rendering;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
@@ -9,7 +9,7 @@ public class WaveObject extends Mesh {
 
     private int waveFloatLocation;
 
-    WaveObject(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
+    public WaveObject(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
         super(theShaderProgram, xLoc, yLoc, zLoc, name);
 
         waveFloatLocation = glGetUniformLocation(theShaderProgram, "waveFloat");

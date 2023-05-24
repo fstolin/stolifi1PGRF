@@ -1,7 +1,10 @@
-package project;
+package project.rendering;
 
 import lwjglutils.OGLBuffers;
+import project.lights.PointLight;
 import transforms.*;
+
+import java.awt.*;
 
 import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
 import static org.lwjgl.opengl.GL20.*;
@@ -28,7 +31,7 @@ public class Mesh {
     protected PointLight pointLight;
 
 
-    Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
+    public Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
         shaderProgram = theShaderProgram;
         modelLocation = glGetUniformLocation(shaderProgram, "model");
 
@@ -135,4 +138,5 @@ public class Mesh {
     public void setPointLight(PointLight pl){
         pointLight = pl;
     }
+
 }

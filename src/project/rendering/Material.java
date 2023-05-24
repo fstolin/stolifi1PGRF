@@ -1,4 +1,4 @@
-package project;
+package project.rendering;
 
 import static org.lwjgl.opengl.GL20.*;
 
@@ -9,7 +9,7 @@ public class Material {
     private float shininess;
     private int shininessLocation;
 
-    Material(float sIntensity, float theShininess, int shaderProgram){
+    public Material(float sIntensity, float theShininess, int shaderProgram){
         specularIntensity = sIntensity;
         shininess = theShininess;
 

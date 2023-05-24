@@ -1,29 +1,30 @@
-package project;
+package project.lights;
 
 import lwjglutils.OGLBuffers;
 import lwjglutils.ToFloatArray;
+import project.rendering.Mesh;
 import transforms.*;
 
 import static org.lwjgl.opengl.GL20.*;
 
 public class PointLight extends Light{
 
-    private Vec3D position;
-    private Vec3D defaultPosition;
-    private Vec3D defaultColor;
-    private boolean enabled;
-    private float constant, linear, exponent;
-    private int positionLocation, constantLocation, linearLocation, exponentLocation;
-    private OGLBuffers oglBuffers;
-    private Mat4Transl translMatrix;
-    private boolean isAttachedToCamera;
-    private Mesh lightMesh;
+    protected Vec3D position;
+    protected Vec3D defaultPosition;
+    protected Vec3D defaultColor;
+    protected boolean enabled;
+    protected float constant, linear, exponent;
+    protected int positionLocation, constantLocation, linearLocation, exponentLocation;
+    protected OGLBuffers oglBuffers;
+    protected Mat4Transl translMatrix;
+    protected boolean isAttachedToCamera;
+    protected Mesh lightMesh;
 
-    PointLight(float red, float green, float blue,
-               float aIntensity, float dIntensity, int shaderProgramLoc, int drawProgramLoc,
-               float xPos, float yPos, float zPos,
-               float con, float lin, float exp) {
-        super(red, green, blue, aIntensity, dIntensity, shaderProgramLoc, drawProgramLoc);
+    public PointLight(float red, float green, float blue,
+                      float aIntensity, float dIntensity, int shaderProgramLoc,
+                      float xPos, float yPos, float zPos,
+                      float con, float lin, float exp) {
+        super(red, green, blue, aIntensity, dIntensity, shaderProgramLoc);
 
         position = new Vec3D(xPos, yPos, zPos);
         defaultPosition = position;
@@ -48,6 +49,7 @@ public class PointLight extends Light{
     public void useLight(Camera camera){
         if (!enabled) {
             color = new Vec3D(0f, 0f, 0f);
+            System.out.println("disabled");
         } else {
             color = defaultColor;
         }

@@ -4,17 +4,20 @@ package project;
 import lwjglutils.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
+import project.lights.DirectionalLight;
+import project.lights.PointLight;
+import project.rendering.Material;
+import project.rendering.Mesh;
+import project.rendering.WaveObject;
 import transforms.Camera;
 import transforms.Mat4OrthoRH;
 import transforms.Mat4PerspRH;
 import transforms.Vec3D;
 
-import java.awt.*;
 import java.io.IOException;
 
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -119,10 +122,10 @@ public class Renderer extends AbstractRenderer{
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new DirectionalLight( 1.f, 0.9f, 0.8f, 0.07f,
                                             0.f, 0.0f, 5.f, 0.24f,
-                                            shaderProgramMain, lightShader);
+                                            shaderProgramMain);
 
         // ### POINT LIGHT ###
-        pointLight = new PointLight(1.0f,0.49f,0.31f, 0.64f, 0.84f, shaderProgramMain, lightShader,
+        pointLight = new PointLight(1.0f,0.49f,0.31f, 0.64f, 0.84f, shaderProgramMain,
                                     4.0f, 0.0f, 2.0f, 0.3f, 0.2f, 0.1f);
 
         // ### INITIALIZE OBJECTS ###
@@ -250,7 +253,7 @@ public class Renderer extends AbstractRenderer{
 
         float movementSpeed = camMovementSpeed * camBoostSpeedMultiplier * deltaTime;
         float transformActualSpeed = transformSpeed * camBoostSpeedMultiplier * deltaTime;
-        float lightDimSpeed = directionalLight.intensityModificationSpeed * deltaTime;
+        float lightDimSpeed = directionalLight.getIntensityModificationSpeed() * deltaTime;
 
         // WASD RF movement
         if (pressedKeys[GLFW_KEY_W]){
@@ -499,18 +502,23 @@ public class Renderer extends AbstractRenderer{
                 spotLightActive = true;
                 directionalLightActive = false;
             }
+
+            // Toggle light on off
             if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
                 if (pointLightActive) pointLight.toggleEnabled();
+                //if (spotLightActive) spotLight.toggleEnabled();
             }
+            // Attach point light to active object
             if (key == GLFW_KEY_X && action == GLFW_PRESS) {
                 if (pointLightActive) return;
-                if (activeMesh.pointLight == null) {
+                if (activeMesh.getPointLight() == null) {
                     activeMesh.setPointLight(pointLight);
                     System.out.println("Attaching pointlight");
                 } else {
                     activeMesh.setPointLight(null);
                 }
             }
+            // Attach point light to camera
             if (key == GLFW_KEY_C && action == GLFW_PRESS) {
                 if (pointLight.getIsAttachedToCamera()){
                     pointLight.setIsAttachedToCamera(false);

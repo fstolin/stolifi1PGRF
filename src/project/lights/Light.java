@@ -1,4 +1,4 @@
-package project;
+package project.lights;
 
 import lwjglutils.ShaderUtils;
 import transforms.Vec3D;
@@ -16,15 +16,13 @@ public class Light {
     protected final float intensityModificationSpeed;
     protected int colorLocation, ambientIntensityLocation, diffuseIntensityLocation;
 
-    Light(float red, float green, float blue, float aIntensity, float dIntensity, int shaderProgramLoc, int drawProgramLoc){
+    Light(float red, float green, float blue, float aIntensity, float dIntensity, int shaderProgramLoc){
             color = new Vec3D(red, green, blue);
             ambientIntensity = aIntensity;
             diffuseIntensity = dIntensity;
             // Speed at which modifications to intensity are set
             intensityModificationSpeed = 0.2f;
             shaderProgram = shaderProgramLoc;
-            // Draw shader
-            drawProgram = drawProgramLoc;
     }
 
     public void decreaseAmbientIntensity(float dimSpeed){
@@ -41,6 +39,10 @@ public class Light {
 
     public void increaseDiffuseIntensity(float dimSpeed){
         if (diffuseIntensity < 1.0f) diffuseIntensity += dimSpeed;
+    }
+
+    public float getIntensityModificationSpeed(){
+        return intensityModificationSpeed;
     }
 
 

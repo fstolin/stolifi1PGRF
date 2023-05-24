@@ -1,4 +1,4 @@
-package project;
+package project.lights;
 
 import transforms.Vec3D;
 
@@ -9,10 +9,10 @@ public class DirectionalLight extends Light {
     protected Vec3D direction;
     protected int directionLocation;
 
-    DirectionalLight(float red, float green, float blue, float aIntensity,
-                     float xDir, float yDir, float zDir, float dIntensity,
-                     int shaderProgramLoc, int drawProgramLoc){
-        super(red, green, blue, aIntensity, dIntensity, shaderProgramLoc, drawProgramLoc);
+    public DirectionalLight(float red, float green, float blue, float aIntensity,
+                            float xDir, float yDir, float zDir, float dIntensity,
+                            int shaderProgramLoc){
+        super(red, green, blue, aIntensity, dIntensity, shaderProgramLoc);
 
         direction = new Vec3D(xDir, yDir, zDir);
         directionLocation = glGetUniformLocation(shaderProgram, "directionalLight.direction");
