@@ -9,6 +9,7 @@ public class PointLight extends Light{
 
     private Vec3D position;
     private Vec3D defaultPosition;
+    private Vec3D defaultColor;
     private boolean enabled;
     private float constant, linear, exponent;
     private int positionLocation, constantLocation, linearLocation, exponentLocation;
@@ -24,9 +25,11 @@ public class PointLight extends Light{
 
         position = new Vec3D(xPos, yPos, zPos);
         defaultPosition = position;
+        defaultColor = new Vec3D(red, green, blue);
         constant = con;
         linear = lin;
         exponent = exp;
+
 
         enabled = true;
 
@@ -41,7 +44,12 @@ public class PointLight extends Light{
     }
 
     public void useLight(){
-        if (!enabled) return;
+        if (!enabled) {
+            color = new Vec3D(0f, 0f, 0f);
+        } else {
+            color = defaultColor;
+        }
+
         glUniform3f(colorLocation, (float) color.getX(), (float) color.getY(), (float) color.getZ());
         glUniform1f(ambientIntensityLocation, ambientIntensity);
         glUniform1f(diffuseIntensityLocation, diffuseIntensity);

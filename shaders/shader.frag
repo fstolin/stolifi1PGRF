@@ -7,7 +7,7 @@ const float near = 0.1f;
 const float far = 20.0f;
 
 vec3 fragToEye;
-float distanceFromLight2;
+float distanceFromLight;
 
 in vec4 colorPosition;
 in vec3 normal;
@@ -102,8 +102,7 @@ vec4 calcPointLight() {
     // Get the direction from fragment to light
     vec3 direction =  pointLight.position - fragPos;
     // Distance between light & fragment - calculate before normalizing
-    float distanceFromLight = length(direction);
-    distanceFromLight2 = distanceFromLight;
+    distanceFromLight = length(direction);
     direction = normalize(direction);
 
     vec4 plColor = calcLightByDirection(pointLight.base, direction);
@@ -115,6 +114,10 @@ vec4 calcPointLight() {
     } else {
         return plColor;
     }
+}
+
+float calculateDistance() {
+    return length(pointLight.position - fragPos);
 }
 
 // Returns the final color of light - to multiply the texture.
@@ -137,9 +140,9 @@ void main() {
             break;
         // distance from light
         case 1:
-            //vec4 light = getLightColor();
-            distanceFromLight2 = distanceFromLight2;
-            outColor = (vec4(vec3(distanceFromLight2), 1.0f));
+            float maxDistance = 10.f;
+            float normalizedDistance = 1 - calculateDistance() / maxDistance;
+            outColor = vec4(vec3(normalizedDistance), 1.0f);
             break;
         // xyz position
         case 2:

@@ -465,6 +465,7 @@ public class Renderer extends AbstractRenderer{
                 directionalLightActive = true;
                 pointLightActive = false;
                 spotLightActive = false;
+                activeMesh = meshList.get(0);
             }
             if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
                 activeMesh = pointLight.getLightMesh();
