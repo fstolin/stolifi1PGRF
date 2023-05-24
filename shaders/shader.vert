@@ -128,6 +128,7 @@ vec3 getPositionById(vec2 position) {
         case 4: return cylindrical1(position);
         case 5: return cylindrical2(position);
         case 6: return sphereShape(position, 0.1f);
+        case 7: return sphereShape(position, 0.1f);
     }
     // default
     return vec3(0.f, 1.f, 2.f);

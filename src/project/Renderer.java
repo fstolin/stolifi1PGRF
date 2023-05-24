@@ -6,6 +6,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import project.lights.DirectionalLight;
 import project.lights.PointLight;
+import project.lights.SpotLight;
 import project.rendering.Material;
 import project.rendering.Mesh;
 import project.rendering.WaveObject;
@@ -33,7 +34,6 @@ import static org.lwjgl.opengl.GL20.*;
 public class Renderer extends AbstractRenderer{
 
     private int shaderProgramMain;
-    private int lightShader;
     private int viewLocation;
     private int projectionLocation;
     private int polygonMode = 0;
@@ -50,15 +50,13 @@ public class Renderer extends AbstractRenderer{
     private boolean orthoProjectionEnabled;
     private int shaderMode;
     private int shaderModeLocation;
-    private boolean pressedKeys[];
+    private boolean[] pressedKeys;
     private boolean mouseButton2 = false;
     double ox, oy;
     private ArrayList<Mesh> meshList;
     private Mesh activeMesh;
     private boolean pointLightActive;
-    private boolean pointLightOverride;
     private boolean spotLightActive;
-    private boolean spotLightOverride;
     private boolean directionalLightActive;
     private int meshIDLocation;
     private OGLTexture2D basicTexture;
@@ -66,8 +64,7 @@ public class Renderer extends AbstractRenderer{
 
     private Material shinyMaterial;
     private Material dullMaterial;
-    private int viewLightLocation;
-    private int projectionLightLocation;
+    private SpotLight spotLight;
 
     // Is called once
     @Override
@@ -113,8 +110,6 @@ public class Renderer extends AbstractRenderer{
 
         viewLocation = glGetUniformLocation(shaderProgramMain, "view");
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
-        viewLightLocation = glGetUniformLocation(lightShader, "view");
-        projectionLightLocation = glGetUniformLocation(lightShader, "projection");
         shaderModeLocation = glGetUniformLocation(shaderProgramMain, "shaderMode");
         meshIDLocation = glGetUniformLocation(shaderProgramMain, "meshID");
         eyePositionLocation = glGetUniformLocation(shaderProgramMain, "eyePosition");
@@ -127,6 +122,10 @@ public class Renderer extends AbstractRenderer{
         // ### POINT LIGHT ###
         pointLight = new PointLight(1.0f,0.49f,0.31f, 0.64f, 0.84f, shaderProgramMain,
                                     4.0f, 0.0f, 2.0f, 0.3f, 0.2f, 0.1f);
+        // ### SPOT LIGHT ###
+        spotLight = new SpotLight(0.99f, 0.93f, 0.69f, 0.64f, 0.84f, shaderProgramMain,
+                                    -0.0f, 0.0f, 3.0f, -0.0f,0.0f,3.0f,
+                                    0.3f, 0.2f, 0.1f, 360.0f);
 
         // ### INITIALIZE OBJECTS ###
         initializeMaterials();
@@ -174,6 +173,10 @@ public class Renderer extends AbstractRenderer{
                 pointLight.getPosition().getY(), pointLight.getPosition().getZ(), "LightPoint");
         meshList.add(mesh7);
         pointLight.setLightMesh(mesh7);
+        Mesh mesh8 = new Mesh(shaderProgramMain,spotLight.getPosition().getX(),
+                spotLight.getPosition().getY(), spotLight.getPosition().getZ(), "SpotLight");
+        meshList.add(mesh8);
+        spotLight.setLightMesh(mesh8);
     }
 
     private void initializeMaterials(){
@@ -199,6 +202,7 @@ public class Renderer extends AbstractRenderer{
     private void handleLights() {
         directionalLight.useLight();
         pointLight.useLight(camera);
+        spotLight.useLight(camera);
     }
 
     // Draws all meshes from the mesh list
@@ -220,7 +224,6 @@ public class Renderer extends AbstractRenderer{
     private void handleRenderUniforms() {
         // View
         glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
-        glUniformMatrix4fv(viewLightLocation, false, camera.getViewMatrix().floatArray());
         // Shader mode
         glUniform1i(shaderModeLocation, shaderMode);
         // EyePosition
@@ -228,10 +231,8 @@ public class Renderer extends AbstractRenderer{
         // Projection
         if (orthoProjectionEnabled) {
             glUniformMatrix4fv(projectionLocation, false, orthoProjection.floatArray());
-            glUniformMatrix4fv(projectionLightLocation, false, orthoProjection.floatArray());
         } else {
             glUniformMatrix4fv(projectionLocation, false, perspProjection.floatArray());
-            glUniformMatrix4fv(projectionLightLocation, false, orthoProjection.floatArray());
         }
     }
 
@@ -279,19 +280,31 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_N]) {
             if (directionalLightActive) directionalLight.decreaseAmbientIntensity(lightDimSpeed);
             if (pointLightActive) pointLight.decreaseAmbientIntensity(lightDimSpeed);
+            if (spotLightActive) spotLight.decreaseAmbientIntensity(lightDimSpeed);
         }
         if (pressedKeys[GLFW_KEY_M]) {
             if (directionalLightActive) directionalLight.increaseAmbientIntensity(lightDimSpeed);
             if (pointLightActive) pointLight.increaseAmbientIntensity(lightDimSpeed);
+            if (spotLightActive) spotLight.increaseAmbientIntensity(lightDimSpeed);
         }
         // Light Dimming - diffuse
         if (pressedKeys[GLFW_KEY_K]) {
             if (directionalLightActive) directionalLight.decreaseDiffuseIntensity(lightDimSpeed);
             if (pointLightActive) pointLight.decreaseDiffuseIntensity(lightDimSpeed);
+            if (spotLightActive) spotLight.decreaseDiffuseIntensity(lightDimSpeed);
         }
         if (pressedKeys[GLFW_KEY_L]) {
             if (directionalLightActive) directionalLight.increaseDiffuseIntensity(lightDimSpeed);
             if (pointLightActive) pointLight.increaseDiffuseIntensity(lightDimSpeed);
+            if (spotLightActive) spotLight.increaseDiffuseIntensity(lightDimSpeed);
+        }
+
+        // Spotlight edge
+        if (pressedKeys[GLFW_KEY_COMMA]) {
+            spotLight.increaseEdge();
+        }
+        if (pressedKeys[GLFW_KEY_PERIOD]) {
+            spotLight.lowerEdge();
         }
 
 
@@ -314,6 +327,8 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_SUBTRACT]) {
             if (pointLightActive) {
                 pointLight.translate(0.0, 0.0, transformActualSpeed);
+            } else if(spotLightActive){
+                spotLight.translate(0.0, 0.0, transformActualSpeed);
             } else {
                 activeMesh.translate(0.0, 0.0, transformActualSpeed);
             }
@@ -321,6 +336,8 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_ADD]) {
             if (pointLightActive) {
                 pointLight.translate(0.0, 0.0, -transformActualSpeed);
+            } else if(spotLightActive){
+                spotLight.translate(0.0, 0.0, -transformActualSpeed);
             } else {
                 activeMesh.translate(0.0, 0.0, -transformActualSpeed);
             }
@@ -329,6 +346,8 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_4]) {
             if(pointLightActive) {
                 pointLight.translate(transformActualSpeed, 0.0, 0.0);
+            } else if(spotLightActive){
+                spotLight.translate(transformActualSpeed, 0.0, 0.0);
             } else {
                 activeMesh.translate(transformActualSpeed, 0.0, 0.0);
             }
@@ -336,6 +355,8 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_6]) {
             if(pointLightActive) {
                 pointLight.translate(-transformActualSpeed, 0.0, 0.0);
+            } else if(spotLightActive){
+                spotLight.translate(-transformActualSpeed, 0.0, 0.0);
             } else {
                 activeMesh.translate(-transformActualSpeed, 0.0, 0.0);
             }
@@ -345,6 +366,8 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_8]) {
             if (pointLightActive) {
                 pointLight.translate(0.0, transformActualSpeed, 0.0);
+            } else if(spotLightActive){
+                spotLight.translate(0.0, transformActualSpeed, 0.0);
             } else {
                 activeMesh.translate(0.0, transformActualSpeed, 0.0);
             }
@@ -352,6 +375,8 @@ public class Renderer extends AbstractRenderer{
         if (pressedKeys[GLFW_KEY_KP_5]) {
             if (pointLightActive) {
                 pointLight.translate(0.0, -transformActualSpeed, 0.0);
+            } else if(spotLightActive){
+                spotLight.translate(0.0, -transformActualSpeed, 0.0);
             } else {
                 activeMesh.translate(0.0, -transformActualSpeed, 0.0);
             }
@@ -404,11 +429,7 @@ public class Renderer extends AbstractRenderer{
     }
 
     private void switchProjection(){
-        if (orthoProjectionEnabled) {
-            orthoProjectionEnabled = false;
-        } else {
-            orthoProjectionEnabled = true;
-        }
+        orthoProjectionEnabled = !orthoProjectionEnabled;
     }
 
 
@@ -506,7 +527,7 @@ public class Renderer extends AbstractRenderer{
             // Toggle light on off
             if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
                 if (pointLightActive) pointLight.toggleEnabled();
-                //if (spotLightActive) spotLight.toggleEnabled();
+                if (spotLightActive) spotLight.toggleEnabled();
             }
             // Attach point light to active object
             if (key == GLFW_KEY_X && action == GLFW_PRESS) {
@@ -520,11 +541,7 @@ public class Renderer extends AbstractRenderer{
             }
             // Attach point light to camera
             if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-                if (pointLight.getIsAttachedToCamera()){
-                    pointLight.setIsAttachedToCamera(false);
-                } else {
-                    pointLight.setIsAttachedToCamera(true);
-                }
+                pointLight.setIsAttachedToCamera(!pointLight.getIsAttachedToCamera());
             }
 
 

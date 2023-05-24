@@ -37,6 +37,13 @@ struct PointLight
     float linear;
     float exponent;
 };
+// spot light
+struct SpotLight
+{
+    PointLight base;
+    vec3 direction;
+    float edge;
+};
 // Material
 struct Material
 {
@@ -46,6 +53,7 @@ struct Material
 
 uniform DirectionalLight directionalLight;
 uniform PointLight pointLight;
+uniform SpotLight spotLight;
 
 uniform Material material;
 uniform int shaderMode;
@@ -97,22 +105,37 @@ vec4 calcDirectionalLight() {
     return calcLightByDirection(directionalLight.base, directionalLight.direction);
 }
 
-// Calculates the point light
-vec4 calcPointLight() {
+// Calculates the pointlight
+vec4 calcPointLight(PointLight pLight) {
     // Get the direction from fragment to light
-    vec3 direction =  pointLight.position - fragPos;
+    vec3 direction =  pLight.position - fragPos;
     // Distance between light & fragment - calculate before normalizing
     distanceFromLight = length(direction);
     direction = normalize(direction);
 
-    vec4 plColor = calcLightByDirection(pointLight.base, direction);
+    vec4 plColor = calcLightByDirection(pLight.base, direction);
     // attenuation
-    float attenuation = pointLight.exponent * distanceFromLight * distanceFromLight + pointLight.linear * distanceFromLight + pointLight.constant;
+    float attenuation = pLight.exponent * distanceFromLight * distanceFromLight + pLight.linear * distanceFromLight + pLight.constant;
     // color = plColor / attenuation
     if (attenuation != 0) {
         return plColor / attenuation;
     } else {
         return plColor;
+    }
+}
+
+vec4 calcSpotLight(SpotLight sLight){
+    // direction between fragment & light position
+    vec3 rayDirection = normalize(sLight.base.position - fragPos);
+    // angle between rayDirection & our spot light direction
+    float spotLightFactor = dot(rayDirection, normalize(sLight.direction));
+    // check if spotLifghtFactor inside our cone
+    if(spotLightFactor > spotLight.edge){
+        // Calculate the point light part of spotlight
+        vec4 color = calcPointLight(sLight.base);
+        return color;
+    } else {
+        return vec4(0.0f, 0.0f, 0.0f, 0.0f);
     }
 }
 
@@ -122,14 +145,18 @@ float calculateDistance() {
 
 // Returns the final color of light - to multiply the texture.
 vec4 getFinalLightColor(){
-    return calcDirectionalLight() + calcPointLight();
+    return calcDirectionalLight() + calcPointLight(pointLight) + calcSpotLight(spotLight);
 }
 
 void main() {
     vec2 scaledTextureCoord = textureCoords * textureScale;
     // Lights object spheres
-    if (meshID == 6 || meshID == 7) {
+    if (meshID == 6) {
         outColor = vec4(pointLight.base.color.x, pointLight.base.color.y, pointLight.base.color.z, 1.0f);
+        return;
+    }
+    if (meshID == 7) {
+        outColor = vec4(spotLight.base.base.color.x, spotLight.base.base.color.y, spotLight.base.base.color.z, 1.0f);
         return;
     }
     // Decide which shaderMode to use - render textures, xyz location, normals.. etc.
