@@ -7,7 +7,7 @@ const float near = 0.1f;
 const float far = 20.0f;
 
 vec3 fragToEye;
-float distanceFromLight;
+float distanceFromLight2;
 
 in vec4 colorPosition;
 in vec3 normal;
@@ -49,6 +49,7 @@ uniform PointLight pointLight;
 
 uniform Material material;
 uniform int shaderMode;
+uniform int meshID;
 uniform vec3 eyePosition;
 
 uniform sampler2D basicTexture;
@@ -99,9 +100,10 @@ vec4 calcDirectionalLight() {
 // Calculates the point light
 vec4 calcPointLight() {
     // Get the direction from fragment to light
-    vec3 direction = fragPos - pointLight.position;
+    vec3 direction =  pointLight.position - fragPos;
     // Distance between light & fragment - calculate before normalizing
-    distanceFromLight = length(direction);
+    float distanceFromLight = length(direction);
+    distanceFromLight2 = distanceFromLight;
     direction = normalize(direction);
 
     vec4 plColor = calcLightByDirection(pointLight.base, direction);
@@ -122,7 +124,11 @@ vec4 getFinalLightColor(){
 
 void main() {
     vec2 scaledTextureCoord = textureCoords * textureScale;
-
+    // Lights object spheres
+    if (meshID == 6 || meshID == 7) {
+        outColor = vec4(pointLight.base.color.x, pointLight.base.color.y, pointLight.base.color.z, 1.0f);
+        return;
+    }
     // Decide which shaderMode to use - render textures, xyz location, normals.. etc.
     switch(shaderMode) {
         // default - complete lighting + texture
@@ -132,7 +138,8 @@ void main() {
         // distance from light
         case 1:
             //vec4 light = getLightColor();
-            outColor = (vec4(vec3(distanceFromLight), 1.0f));
+            distanceFromLight2 = distanceFromLight2;
+            outColor = (vec4(vec3(distanceFromLight2), 1.0f));
             break;
         // xyz position
         case 2:

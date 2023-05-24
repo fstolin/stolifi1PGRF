@@ -59,13 +59,13 @@ vec3 objSpehrical1(vec2 position) {
 }
 
 // Sphere testing - spherical #2
-vec3 sphereShape(vec2 position) {
+vec3 sphereShape(vec2 position, float radius) {
     // Zenith - 0 - 1pi
     float zen = PI * position.x;
     // Azimuth - 0 - 2pi
     float azi = 2.0f * PI * position.y;
     // Radius
-    float rad = 1.2f;
+    float rad = radius;
 
     // to Cartesian
     // x = rad * sin(zenith) * cos (azimuth)
@@ -123,11 +123,11 @@ vec3 getPositionById(vec2 position) {
     switch (meshID) {
         case 0: return bendFunction(position);
         case 1: return bendFunction2(position);
-        case 2: return sphereShape(position);
+        case 2: return sphereShape(position, 1.2f);
         case 3: return objSpehrical1(position);
         case 4: return cylindrical1(position);
         case 5: return cylindrical2(position);
-        case 6: return plane(position);
+        case 6: return sphereShape(position, 0.1f);
     }
     // default
     return vec3(0.f, 1.f, 2.f);

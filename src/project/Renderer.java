@@ -52,12 +52,17 @@ public class Renderer extends AbstractRenderer{
     double ox, oy;
     private ArrayList<Mesh> meshList;
     private Mesh activeMesh;
+    private boolean pointLightActive;
+    private boolean spotLightActive;
+    private boolean directionalLightActive;
     private int meshIDLocation;
     private OGLTexture2D basicTexture;
     private int eyePositionLocation;
 
     private Material shinyMaterial;
     private Material dullMaterial;
+    private int viewLightLocation;
+    private int projectionLightLocation;
 
     // Is called once
     @Override
@@ -103,22 +108,24 @@ public class Renderer extends AbstractRenderer{
 
         viewLocation = glGetUniformLocation(shaderProgramMain, "view");
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
+        viewLightLocation = glGetUniformLocation(lightShader, "view");
+        projectionLightLocation = glGetUniformLocation(lightShader, "projection");
         shaderModeLocation = glGetUniformLocation(shaderProgramMain, "shaderMode");
         meshIDLocation = glGetUniformLocation(shaderProgramMain, "meshID");
         eyePositionLocation = glGetUniformLocation(shaderProgramMain, "eyePosition");
 
-        // ### INITIALIZE OBJECTS ###
-        initializeMaterials();
-        initializeObjects();
-
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new DirectionalLight( 1.f, 0.9f, 0.8f, 0.07f,
                                             0.f, 0.0f, 5.f, 0.24f,
-                                            shaderProgramMain);
+                                            shaderProgramMain, lightShader);
 
         // ### POINT LIGHT ###
-        pointLight = new PointLight(1.0f,0.49f,0.31f, 0.44f, 0.84f, shaderProgramMain,
-                                    0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f);
+        pointLight = new PointLight(1.0f,0.49f,0.31f, 0.64f, 0.84f, shaderProgramMain, lightShader,
+                                    4.0f, 0.0f, 2.0f, 0.3f, 0.2f, 0.1f);
+
+        // ### INITIALIZE OBJECTS ###
+        initializeMaterials();
+        initializeObjects();
 
         // ### CAMERA ###
         camera = new Camera()
@@ -155,13 +162,13 @@ public class Renderer extends AbstractRenderer{
         mesh5.setScale(0.35f);
         meshList.add(mesh5);
         mesh5.setMaterial(shinyMaterial);
-        Mesh mesh6 = new Mesh(shaderProgramMain, -5.0f, -10.0f, 0.0f, "cylinder");
+        Mesh mesh6 = new Mesh(shaderProgramMain, -5.0f, -6.5f, 0.0f, "cylinder");
         meshList.add(mesh6);
         mesh6.setMaterial(dullMaterial);
-        Mesh mesh7 = new Mesh(shaderProgramMain, -1.0f, -1.0f, 2.f, "plane");
-        mesh7.scale(2.0f);
+        Mesh mesh7 = new Mesh(shaderProgramMain, pointLight.getPosition().getX(),
+                pointLight.getPosition().getY(), pointLight.getPosition().getZ(), "LightPoint");
         meshList.add(mesh7);
-        mesh7.setMaterial(shinyMaterial);
+        pointLight.setLightMesh(mesh7);
     }
 
     private void initializeMaterials(){
@@ -208,6 +215,7 @@ public class Renderer extends AbstractRenderer{
     private void handleRenderUniforms() {
         // View
         glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
+        glUniformMatrix4fv(viewLightLocation, false, camera.getViewMatrix().floatArray());
         // Shader mode
         glUniform1i(shaderModeLocation, shaderMode);
         // EyePosition
@@ -215,8 +223,10 @@ public class Renderer extends AbstractRenderer{
         // Projection
         if (orthoProjectionEnabled) {
             glUniformMatrix4fv(projectionLocation, false, orthoProjection.floatArray());
+            glUniformMatrix4fv(projectionLightLocation, false, orthoProjection.floatArray());
         } else {
             glUniformMatrix4fv(projectionLocation, false, perspProjection.floatArray());
+            glUniformMatrix4fv(projectionLightLocation, false, orthoProjection.floatArray());
         }
     }
 
@@ -260,62 +270,77 @@ public class Renderer extends AbstractRenderer{
             camera = camera.down(movementSpeed);
         }
 
+        // Light Dimming - ambient
+        if (pressedKeys[GLFW_KEY_N]) {
+            if (directionalLightActive) directionalLight.decreaseAmbientIntensity(lightDimSpeed);
+            if (pointLightActive) pointLight.decreaseAmbientIntensity(lightDimSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_M]) {
+            if (directionalLightActive) directionalLight.increaseAmbientIntensity(lightDimSpeed);
+            if (pointLightActive) pointLight.increaseAmbientIntensity(lightDimSpeed);
+        }
+        // Light Dimming - diffuse
+        if (pressedKeys[GLFW_KEY_K]) {
+            if (directionalLightActive) directionalLight.decreaseDiffuseIntensity(lightDimSpeed);
+            if (pointLightActive) pointLight.decreaseDiffuseIntensity(lightDimSpeed);
+        }
+        if (pressedKeys[GLFW_KEY_L]) {
+            if (directionalLightActive) directionalLight.increaseDiffuseIntensity(lightDimSpeed);
+            if (pointLightActive) pointLight.increaseDiffuseIntensity(lightDimSpeed);
+        }
+
+
+        // ### MESH MANIPULATION ###
         // Reset the current mesh
-        if (pressedKeys[GLFW_KEY_KP_0]){
+        if (pressedKeys[GLFW_KEY_KP_0]) {
             activeMesh.resetTransforms();
+            if (pointLightActive) pointLight.resetTransforms();
         }
 
         // TRANSFORMING the current mesh
         // Scale
-        if (pressedKeys[GLFW_KEY_KP_9]){
-            activeMesh.scale(transformActualSpeed);
+        if (pressedKeys[GLFW_KEY_KP_9]) {
+            if (!spotLightActive && !pointLightActive) activeMesh.scale(transformActualSpeed);
         }
-        if (pressedKeys[GLFW_KEY_KP_7]){
-            activeMesh.scale(-transformActualSpeed);
+        if (pressedKeys[GLFW_KEY_KP_7]) {
+            if (!spotLightActive && !pointLightActive) activeMesh.scale(-transformActualSpeed);
         }
         // Up & Down
-        if (pressedKeys[GLFW_KEY_KP_SUBTRACT]){
-            activeMesh.translate(0.0,0.0,transformActualSpeed);
+        if (pressedKeys[GLFW_KEY_KP_SUBTRACT]) {
+            activeMesh.translate(0.0, 0.0, transformActualSpeed);
+            if (pointLightActive) pointLight.translate(0.0, 0.0, transformActualSpeed);
         }
-        if (pressedKeys[GLFW_KEY_KP_ADD]){
-            activeMesh.translate(0.0,0.0,-transformActualSpeed);
+        if (pressedKeys[GLFW_KEY_KP_ADD]) {
+            activeMesh.translate(0.0, 0.0, -transformActualSpeed);
+            if (pointLightActive) pointLight.translate(0.0, 0.0, -transformActualSpeed);
         }
         // Left & Right
-        if (pressedKeys[GLFW_KEY_KP_4]){
-            activeMesh.translate(transformActualSpeed, 0.0,0.0);
+        if (pressedKeys[GLFW_KEY_KP_4]) {
+            activeMesh.translate(transformActualSpeed, 0.0, 0.0);
+            if(pointLightActive) pointLight.translate(transformActualSpeed, 0.0, 0.0);
         }
-        if (pressedKeys[GLFW_KEY_KP_6]){
-            activeMesh.translate(-transformActualSpeed, 0.0,0.0);
-        }
-        // Back & Forward
-        if (pressedKeys[GLFW_KEY_KP_8]){
-            activeMesh.translate(0.0, transformActualSpeed, 0.0);
-        }
-        if (pressedKeys[GLFW_KEY_KP_5]){
-            activeMesh.translate(0.0, -transformActualSpeed, 0.0);
-        }
-        // Rotation
-        if (pressedKeys[GLFW_KEY_KP_1]){
-            activeMesh.rotate(0.025f * transformSpeed);
-        }
-        if (pressedKeys[GLFW_KEY_KP_3]){
-            activeMesh.rotate(-0.025f * transformSpeed);
+        if (pressedKeys[GLFW_KEY_KP_6]) {
+            activeMesh.translate(-transformActualSpeed, 0.0, 0.0);
+            if(pointLightActive) pointLight.translate(-transformActualSpeed, 0.0, 0.0);
         }
 
-        // Light Dimming - ambient
-        if (pressedKeys[GLFW_KEY_N]){
-            directionalLight.decreaseAmbientIntensity(lightDimSpeed);
+        // Back & Forward
+        if (pressedKeys[GLFW_KEY_KP_8]) {
+            activeMesh.translate(0.0, transformActualSpeed, 0.0);
+            if (pointLightActive) pointLight.translate(0.0, transformActualSpeed, 0.0);
         }
-        if (pressedKeys[GLFW_KEY_M]){
-            directionalLight.increaseAmbientIntensity(lightDimSpeed);
+        if (pressedKeys[GLFW_KEY_KP_5]) {
+            activeMesh.translate(0.0, -transformActualSpeed, 0.0);
+            if (pointLightActive) pointLight.translate(0.0, -transformActualSpeed, 0.0);
         }
-        // Light Dimming - diffuse
-        if (pressedKeys[GLFW_KEY_K]){
-            directionalLight.decreaseDiffuseIntensity(lightDimSpeed);
+        // Rotation
+        if (pressedKeys[GLFW_KEY_KP_1]) {
+            if (!spotLightActive && !pointLightActive) activeMesh.rotate(0.025f * transformSpeed);
         }
-        if (pressedKeys[GLFW_KEY_L]){
-            directionalLight.increaseDiffuseIntensity(lightDimSpeed);
+        if (pressedKeys[GLFW_KEY_KP_3]) {
+            if (!spotLightActive && !pointLightActive) activeMesh.rotate(-0.025f * transformSpeed);
         }
+
     }
 
     // Returns the delta time
@@ -363,6 +388,7 @@ public class Renderer extends AbstractRenderer{
         }
     }
 
+
     // Handle key presses that don't have to be smooth
     private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
         @Override
@@ -385,44 +411,77 @@ public class Renderer extends AbstractRenderer{
                 if (meshList.size() > 0) {
                     activeMesh = meshList.get(0);
                     activeMesh.toggleEnabled();
-                    System.out.println(activeMesh.name);
+                    pointLightActive = false;
+                    spotLightActive = false;
+                    directionalLightActive = false;
                 }
             }
             if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
                 if (meshList.size() > 1) {
                     activeMesh = meshList.get(1);
                     activeMesh.toggleEnabled();
-                    System.out.println(activeMesh.name);
+                    pointLightActive = false;
+                    spotLightActive = false;
+                    directionalLightActive = false;
                 }
             }
             if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
                 if (meshList.size() > 2) {
                     activeMesh = meshList.get(2);
                     activeMesh.toggleEnabled();
-                    System.out.println(activeMesh.name);
+                    pointLightActive = false;
+                    spotLightActive = false;
+                    directionalLightActive = false;
                 }
             }
             if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
                 if (meshList.size() > 3) {
                     activeMesh = meshList.get(3);
                     activeMesh.toggleEnabled();
-                    System.out.println(activeMesh.name);
+                    pointLightActive = false;
+                    spotLightActive = false;
+                    directionalLightActive = false;
                 }
             }
             if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
                 if (meshList.size() > 4) {
                     activeMesh = meshList.get(4);
                     activeMesh.toggleEnabled();
-                    System.out.println(activeMesh.name);
+                    pointLightActive = false;
+                    spotLightActive = false;
+                    directionalLightActive = false;
                 }
             }
             if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
                 if (meshList.size() > 5) {
                     activeMesh = meshList.get(5);
                     activeMesh.toggleEnabled();
-                    System.out.println(activeMesh.name);
+                    pointLightActive = false;
+                    spotLightActive = false;
+                    directionalLightActive = false;
                 }
             }
+            if (key == GLFW_KEY_7 && action == GLFW_PRESS) {
+                directionalLightActive = true;
+                pointLightActive = false;
+                spotLightActive = false;
+            }
+            if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
+                activeMesh = pointLight.getLightMesh();
+                pointLightActive = true;
+                spotLightActive = false;
+                directionalLightActive = false;
+            }
+            if (key == GLFW_KEY_9 && action == GLFW_PRESS) {
+                activeMesh = pointLight.getLightMesh();
+                pointLightActive = false;
+                spotLightActive = true;
+                directionalLightActive = false;
+            }
+            if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
+                if (pointLightActive) pointLight.toggleEnabled();
+            }
+
 
             // SMOOTH MOVEMENT & TRANSFORMATIONS -> save to pressedKey Array
             if (action == GLFW_RELEASE){
