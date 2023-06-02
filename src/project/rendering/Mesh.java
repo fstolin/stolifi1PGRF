@@ -23,6 +23,7 @@ public class Mesh {
     protected Vec3D position;
     protected Vec3D scale;
     protected double rotation;
+    protected int id;
 
     protected Vec3D defaultPos;
     protected Vec3D defaultScale;
@@ -33,7 +34,7 @@ public class Mesh {
     protected SpotLight spotLight;
 
 
-    public Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name) {
+    public Mesh(int theShaderProgram, double xLoc, double yLoc, double zLoc, String name, int id) {
         shaderProgram = theShaderProgram;
         modelLocation = glGetUniformLocation(shaderProgram, "model");
 
@@ -46,6 +47,7 @@ public class Mesh {
         defaultRot = rotation;
         defaultScale = scale;
         this.name = name;
+        this.id = id;
 
         // Default material
         material = new Material(0.45f, 0.45f, shaderProgram);
@@ -148,6 +150,10 @@ public class Mesh {
 
     public void setSpotLight(SpotLight sl){
         spotLight = sl;
+    }
+
+    public int getId(){
+        return this.id;
     }
 
 }

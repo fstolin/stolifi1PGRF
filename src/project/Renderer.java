@@ -66,6 +66,9 @@ public class Renderer extends AbstractRenderer{
     private Material shinyMaterial;
     private Material dullMaterial;
     private SpotLight spotLight;
+    private int shaderProgramOutline;
+    private int viewOutlinesLocation;
+    private int projectionOutlinesLocation;
 
     // Is called once
     @Override
@@ -94,6 +97,11 @@ public class Renderer extends AbstractRenderer{
         // Polygon mode
         switchPolygonMode();
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        // When both test pass we will use the values defined by the stencil function
+        // Will have 2D pictures of the 3D objects in stencil buffer
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
 
         textRenderer = new OGLTextRenderer(width, height);
 
@@ -109,12 +117,15 @@ public class Renderer extends AbstractRenderer{
         }
 
         shaderProgramMain = ShaderUtils.loadProgram("/shader");
+        shaderProgramOutline = ShaderUtils.loadProgram("/outlines");
 
         viewLocation = glGetUniformLocation(shaderProgramMain, "view");
         projectionLocation = glGetUniformLocation(shaderProgramMain, "projection");
         shaderModeLocation = glGetUniformLocation(shaderProgramMain, "shaderMode");
         meshIDLocation = glGetUniformLocation(shaderProgramMain, "meshID");
         eyePositionLocation = glGetUniformLocation(shaderProgramMain, "eyePosition");
+        viewOutlinesLocation = glGetUniformLocation(shaderProgramOutline, "view");
+        projectionOutlinesLocation = glGetUniformLocation(shaderProgramOutline, "projection");
 
         // ### INITIALIZE DIRECTIONAL LIGHT ###
         directionalLight = new DirectionalLight( 1.f, 0.9f, 0.8f, 0.02f,
@@ -152,31 +163,32 @@ public class Renderer extends AbstractRenderer{
     }
 
     private void initializeObjects(){
-        meshList.add(new WaveObject(shaderProgramMain, 0.0f, 0.0f, 0.0f, "waveObject1"));
+        int id = 0;
+        meshList.add(new WaveObject(shaderProgramMain, 0.0f, 0.0f, 0.0f, "waveObject1", id++));
         activeMesh = meshList.get(0);
         activeMesh.setMaterial(shinyMaterial);
-        WaveObject obj = new WaveObject(shaderProgramMain, -2.0f, 0.0f,1.0f, "staticObjectCart");
+        WaveObject obj = new WaveObject(shaderProgramMain, -2.0f, 0.0f,1.0f, "staticObjectCart", id++);
         obj.setMaterial(dullMaterial);
         meshList.add(obj);
-        Mesh mesh3 = new Mesh(shaderProgramMain, -2.0f, -3.0f, 0.f, "Sphere");
+        Mesh mesh3 = new Mesh(shaderProgramMain, -2.0f, -3.0f, 0.f, "Sphere", id++);
         meshList.add((mesh3));
         mesh3.setMaterial(shinyMaterial);
-        Mesh mesh4 = new Mesh(shaderProgramMain, -0.0f,-3.0f, 0.0f, "SphericalObejct2");
+        Mesh mesh4 = new Mesh(shaderProgramMain, -0.0f,-3.0f, 0.0f, "SphericalObejct2", id++);
         meshList.add(mesh4);
         mesh4.setMaterial(dullMaterial);
-        Mesh mesh5 = new Mesh(shaderProgramMain, 3.0f, -20.0f, 0.0f, "ShakeyCylinder");
+        Mesh mesh5 = new Mesh(shaderProgramMain, 3.0f, -20.0f, 0.0f, "ShakeyCylinder", id++);
         mesh5.setScale(0.35f);
         meshList.add(mesh5);
         mesh5.setMaterial(shinyMaterial);
-        Mesh mesh6 = new Mesh(shaderProgramMain, -5.0f, -6.5f, 0.0f, "cylinder");
+        Mesh mesh6 = new Mesh(shaderProgramMain, -5.0f, -6.5f, 0.0f, "cylinder", id++);
         meshList.add(mesh6);
         mesh6.setMaterial(dullMaterial);
         Mesh mesh7 = new Mesh(shaderProgramMain, pointLight.getPosition().getX(),
-                pointLight.getPosition().getY(), pointLight.getPosition().getZ(), "LightPoint");
+                pointLight.getPosition().getY(), pointLight.getPosition().getZ(), "LightPoint", id++);
         meshList.add(mesh7);
         pointLight.setLightMesh(mesh7);
         Mesh mesh8 = new Mesh(shaderProgramMain,spotLight.getPosition().getX(),
-                spotLight.getPosition().getY(), spotLight.getPosition().getZ(), "SpotLight");
+                spotLight.getPosition().getY(), spotLight.getPosition().getZ(), "SpotLight", id++);
         meshList.add(mesh8);
         spotLight.setLightMesh(mesh8);
     }
@@ -193,12 +205,33 @@ public class Renderer extends AbstractRenderer{
         handleKeyPresses();
 
         glClearColor(0.15f,0.15f, 0.15f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
+        handleStencilBuffer();
         bindTextures();
         handleRenderUniforms();
         handleLights();
         drawMeshes();
+        handleStencilEnd();
+    }
+
+    // Sets the test to pass before drawing
+    private void handleStencilBuffer(){
+        // Always passes
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+    }
+
+
+    private void handleStencilEnd(){
+        // Handle if only depth test passes, but stencil test != 1
+        glStencilFunc(GL_NOTEQUAL, 1, 0XFF);
+        glStencilMask(0XFF);
+        // Change stencil mask value
+        glStencilMask(0x00);
+        // Disable depth test
+        glDisable(GL_DEPTH_TEST);
     }
 
     private void handleLights() {
@@ -213,7 +246,8 @@ public class Renderer extends AbstractRenderer{
             // Draw the mesh
             Mesh theMesh = meshList.get(i);
             // Update its shape - based on it's id
-            glUniform1i(meshIDLocation, i);
+            glUniform1i(meshIDLocation, theMesh.getId());
+
             theMesh.draw();
         }
     }
